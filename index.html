@@ -169,6 +169,37 @@
                 </div>
             </div>
 
+            <!-- Real-time Cloud Sync Card (실시간 무선 공유 카드) -->
+            <div id="cloudSyncCard" class="bg-gradient-to-br from-emerald-50 to-amber-50/50 rounded-2xl p-5 shadow-sm border border-emerald-100/60 relative overflow-hidden hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-emerald-950 text-xs tracking-wide flex items-center gap-1.5">
+                        <i id="cloudStatusIcon" class="fa-solid fa-cloud-arrow-up text-stone-400"></i>
+                        <span>실시간 무선 연동방</span>
+                    </h3>
+                    <span id="cloudStatusBadge" class="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-semibold">연동 전</span>
+                </div>
+                <p id="cloudStatusDesc" class="text-[11px] text-stone-600 mb-3.5 leading-relaxed">
+                    원하는 방 이름을 입력하고 함께 접속해 보세요! 멀리 떨어져 있어도 실시간으로 체크 내용이 자동 공유됩니다.
+                </p>
+                <!-- Form to Join -->
+                <div id="cloudActionForm" class="flex gap-2">
+                    <input type="text" id="cloudRoomInput" placeholder="예: 은혜와지우" class="flex-grow px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600 bg-white shadow-inner font-semibold">
+                    <button onclick="connectCloudRoom()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all whitespace-nowrap">
+                        연동하기
+                    </button>
+                </div>
+                <!-- Connected Status UI -->
+                <div id="cloudActiveForm" class="hidden flex items-center justify-between bg-white/90 p-3 rounded-xl border border-emerald-100/50 shadow-sm">
+                    <div class="truncate mr-2">
+                        <span class="text-[9px] text-stone-400 block font-bold">실시간 연동 중인 방</span>
+                        <span id="activeRoomNameDisplay" class="text-xs font-bold text-emerald-800 truncate block">은혜와지우</span>
+                    </div>
+                    <button onclick="leaveCloudRoom()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/40 font-bold px-2.5 py-1.5 rounded-lg text-[10px] transition-all whitespace-nowrap">
+                        연동 해제
+                    </button>
+                </div>
+            </div>
+
             <!-- Together Board (Dynamic Comparison with others) -->
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80">
                 <h3 class="font-bold text-stone-800 text-sm tracking-wide uppercase mb-3.5 flex items-center justify-between">
@@ -286,7 +317,6 @@
     <footer class="bg-stone-100 border-t border-stone-200 py-6 mt-12 text-center text-xs text-stone-500">
         <p class="font-semibold mb-1">우리 함께 성경 읽기표 &copy; 2026</p>
         <p>함께 읽는 분들과 독서 진도를 공유하며 성경을 통독해 보세요.</p>
-        <p class="text-emerald-700 font-semibold mt-2 cursor-pointer hover:underline" onclick="openShareModal()">💡 실시간 온라인 연동(클라우드 저장) 기능 추가를 원하시나요?</p>
     </footer>
 
     <!-- ADD USER PROFILE MODAL -->
@@ -319,17 +349,17 @@
         </div>
     </div>
 
-    <!-- EXPORT & IMPORT DATA MODAL -->
+    <!-- EXPORT & IMPORT DATA MODAL (Offline Backup) -->
     <div id="shareModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-fade-in border border-stone-100">
             <h3 class="font-bold text-lg text-stone-800 mb-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-cloud-arrow-up text-amber-600"></i> 진도 공유 및 백업하기
+                <i class="fa-solid fa-file-export text-amber-600"></i> 백업용 공유코드 추출
             </h3>
-            <p class="text-xs text-stone-500 mb-4 leading-relaxed">아래 데이터를 복사하여 카카오톡이나 메시지로 상대방에게 보내주면 다른 기기에서도 서로의 읽기 상황을 함께 확인할 수 있습니다!</p>
+            <p class="text-xs text-stone-500 mb-4 leading-relaxed">혹시 기기를 변경해야 하는 경우 아래의 수동 코드를 사용하여 기존 오프라인 데이터를 수동 백업 및 복원할 수 있습니다.</p>
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-stone-500 mb-1">내 공유 코드 (텍스트 복사)</label>
+                    <label class="block text-xs font-bold text-stone-500 mb-1">내 오프라인 데이터 백업 코드</label>
                     <div class="flex gap-2">
                         <textarea id="shareCodeTextarea" readonly class="w-full px-3 py-2 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-600 h-20 resize-none font-mono focus:outline-none"></textarea>
                     </div>
@@ -342,18 +372,12 @@
                 <hr class="border-stone-100">
 
                 <div>
-                    <label class="block text-xs font-bold text-stone-500 mb-1" for="importCodeInput">상대방 코드 가져오기 / 합치기</label>
-                    <textarea id="importCodeInput" placeholder="이곳에 함께 읽는 사람이 공유해준 코드를 복사해서 붙여넣어 주세요" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs h-20 resize-none font-mono focus:outline-emerald-600"></textarea>
+                    <label class="block text-xs font-bold text-stone-500 mb-1" for="importCodeInput">가져온 코드 수동 복원하기</label>
+                    <textarea id="importCodeInput" placeholder="이곳에 이전에 복사해둔 백업 코드를 붙여넣어 주세요" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs h-20 resize-none font-mono focus:outline-emerald-600"></textarea>
                     <button onclick="importShareCode()" class="mt-1.5 w-full bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
-                        <i class="fa-solid fa-cloud-arrow-down"></i> 코드에서 읽기 데이터 불러오기
+                        <i class="fa-solid fa-cloud-arrow-down"></i> 코드에서 읽기 데이터 복원하기
                     </button>
                 </div>
-            </div>
-
-            <!-- Custom Cloud offer notice -->
-            <div class="mt-4 bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-[11px] text-emerald-800 leading-relaxed">
-                <strong>💡 실시간 무선 공유 안내</strong><br>
-                현재는 오프라인 기기 저장 방식을 사용하고 있습니다. 번거롭게 코드를 주고받지 않고도 <strong>실시간으로 서로의 체크 상황을 연동</strong>하는 무선 저장 추가가 필요하시면 대화방에 언제든지 요청해 주세요! 바로 적용해 드릴 수 있습니다.
             </div>
 
             <div class="mt-5 pt-3 border-t border-stone-100 flex justify-end">
@@ -362,8 +386,12 @@
         </div>
     </div>
 
-    <!-- SCRIPT LOGIC -->
-    <script>
+    <!-- SCRIPT LOGIC (Firebase SDK modules included natively!) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // Full 66 books mapping (1189 chapters)
         const bibleBooks = [
             // Old Testament
@@ -469,32 +497,16 @@
             dailyGoal: 3
         };
 
-        // Initialize App on DOM Loaded
-        window.addEventListener('DOMContentLoaded', () => {
-            loadStateFromLocalStorage();
-            renderUsersDropdown();
-            renderBibleBooksList();
-            renderChapterGrid();
-            renderOverallProgress();
-            renderTogetherProgressBoard();
-            getNewVerse();
-            updateDailyGoal();
-        });
+        // Firebase Cloud Variables
+        let db = null;
+        let auth = null;
+        let appId = 'default-app-id';
+        let isFirebaseEnabled = false;
+        let currentRoomId = null;
+        let roomUnsubscribe = null;
+        let currentUser = null;
 
-        // Load & Save to LocalStorage
-        function loadStateFromLocalStorage() {
-            const savedState = localStorage.getObj('bible_together_state');
-            if (savedState) {
-                state = savedState;
-            }
-        }
-
-        // Save state, while ensuring user names are cleaned and preserved
-        function saveStateToLocalStorage() {
-            localStorage.setObj('bible_together_state', state);
-        }
-
-        // Helper Extends for LocalStorage JSON
+        // Custom LocalStorage utility wrapper
         Storage.prototype.setObj = function(key, obj) {
             return this.setItem(key, JSON.stringify(obj))
         }
@@ -504,6 +516,196 @@
             } catch (e) {
                 return null;
             }
+        }
+
+        // Initialize App on DOM Loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStateFromLocalStorage();
+            initFirebaseAndAuth();
+            renderUsersDropdown();
+            renderBibleBooksList();
+            renderChapterGrid();
+            renderOverallProgress();
+            renderTogetherProgressBoard();
+            getNewVerse();
+            updateDailyGoal();
+        });
+
+        // Initialize Firebase dynamically based on environment configuration safely
+        async function initFirebaseAndAuth() {
+            const hasConfig = typeof __firebase_config !== 'undefined' && __firebase_config;
+            if (hasConfig) {
+                try {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+                    appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    isFirebaseEnabled = true;
+
+                    // UI Reveal
+                    document.getElementById('cloudSyncCard').classList.remove('hidden');
+
+                    // Rule 3: Authentication FIRST and await it
+                    const initAuth = async () => {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    };
+                    await initAuth();
+
+                    // Listen to auth states
+                    onAuthStateChanged(auth, (user) => {
+                        currentUser = user;
+                        if (user) {
+                            console.log("실시간 서버 연결 완료:", user.uid);
+                            // Auto join saved room if present
+                            const savedRoomId = localStorage.getItem('bible_together_room_id');
+                            if (savedRoomId) {
+                                joinCloudRoom(savedRoomId);
+                            }
+                        }
+                    });
+
+                } catch (e) {
+                    console.error("Firebase 로딩 실패 (오프라인 모드로 자동 전환):", e);
+                }
+            } else {
+                console.log("현재 오프라인 로컬 저장 모드로 작동하고 있습니다.");
+            }
+        }
+
+        // Join a real-time Room safely using strict path (RULE 1)
+        function joinCloudRoom(roomId) {
+            if (!isFirebaseEnabled || !currentUser) return;
+            if (roomUnsubscribe) roomUnsubscribe();
+
+            currentRoomId = roomId;
+            localStorage.setItem('bible_together_room_id', roomId);
+
+            // Use strictly defined path for public rooms (RULE 1)
+            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId);
+
+            // Real-time synchronization stream listener
+            roomUnsubscribe = onSnapshot(roomDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data && data.users) {
+                        // Merge server data into local state
+                        Object.keys(data.users).forEach(uid => {
+                            state.users[uid] = data.users[uid];
+                        });
+                        saveStateToLocalStorage();
+                        
+                        // Render updated layouts
+                        renderUsersDropdown();
+                        renderBibleBooksList();
+                        renderChapterGrid();
+                        renderOverallProgress();
+                        renderTogetherProgressBoard();
+                    }
+                } else {
+                    // Initialize empty cloud document with current state
+                    setDoc(roomDocRef, { users: state.users });
+                }
+
+                // Update UI state to linked
+                document.getElementById('cloudStatusIcon').className = "fa-solid fa-cloud text-emerald-600 animate-pulse";
+                document.getElementById('cloudStatusBadge').className = "text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold";
+                document.getElementById('cloudStatusBadge').innerText = "연동됨";
+                document.getElementById('cloudStatusDesc').classList.add('hidden');
+                document.getElementById('cloudActionForm').classList.add('hidden');
+                document.getElementById('cloudActiveForm').classList.remove('hidden');
+                document.getElementById('activeRoomNameDisplay').innerText = roomId;
+            }, (error) => {
+                console.error("실시간 수신 에러:", error);
+            });
+        }
+
+        // Connect room triggers from UI
+        async function connectCloudRoom() {
+            const inputVal = document.getElementById('cloudRoomInput').value.trim();
+            if (!inputVal) {
+                alertModal("입력된 방 이름이 없습니다. 방 이름을 입력해 주세요!");
+                return;
+            }
+            if (!currentUser) {
+                alertModal("서버 연결 초기화 중입니다. 3초 후 다시 시도해 주세요.");
+                return;
+            }
+            joinCloudRoom(inputVal);
+            await syncStateToCloud();
+        }
+
+        // Disconnect from real-time sync
+        function leaveCloudRoom() {
+            if (roomUnsubscribe) roomUnsubscribe();
+            currentRoomId = null;
+            localStorage.removeItem('bible_together_room_id');
+
+            // Reset UI states
+            document.getElementById('cloudStatusIcon').className = "fa-solid fa-cloud-arrow-up text-stone-400";
+            document.getElementById('cloudStatusBadge').className = "text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-semibold";
+            document.getElementById('cloudStatusBadge').innerText = "연동 전";
+            document.getElementById('cloudStatusDesc').classList.remove('hidden');
+            document.getElementById('cloudActionForm').classList.remove('hidden');
+            document.getElementById('cloudActiveForm').classList.add('hidden');
+            document.getElementById('cloudRoomInput').value = '';
+            
+            alertModal("실시간 연동이 해제되었습니다. 이제 오프라인으로 기록됩니다.");
+        }
+
+        // Push current active user status to database safely (RULE 3 check)
+        async function syncStateToCloud() {
+            if (!isFirebaseEnabled || !currentRoomId || !currentUser) return;
+            
+            const myUserObj = state.users[state.activeUserId];
+            if (!myUserObj) return;
+
+            // Strict path (RULE 1)
+            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', currentRoomId);
+
+            try {
+                // Update only active user node to prevent direct collisions
+                await updateDoc(roomDocRef, {
+                    [`users.${state.activeUserId}`]: {
+                        name: myUserObj.name,
+                        color: myUserObj.color,
+                        progress: myUserObj.progress,
+                        updatedAt: Date.now()
+                    }
+                });
+            } catch (err) {
+                // Fallback to merge creation
+                try {
+                    await setDoc(roomDocRef, {
+                        users: {
+                            [state.activeUserId]: {
+                                name: myUserObj.name,
+                                color: myUserObj.color,
+                                progress: myUserObj.progress,
+                                updatedAt: Date.now()
+                            }
+                        }
+                    }, { merge: true });
+                } catch (e) {
+                    console.error("클라우드 업로드 에러:", e);
+                }
+            }
+        }
+
+        // Load & Save to LocalStorage
+        function loadStateFromLocalStorage() {
+            const savedState = localStorage.getObj('bible_together_state');
+            if (savedState) {
+                state = savedState;
+            }
+        }
+
+        function saveStateToLocalStorage() {
+            localStorage.setObj('bible_together_state', state);
         }
 
         // Toggle User Selector Dropdown
@@ -526,8 +728,8 @@
             const container = document.getElementById('userListContainer');
             container.innerHTML = '';
 
-            const currentUser = state.users[state.activeUserId];
-            document.getElementById('currentUserDisplay').innerText = currentUser ? currentUser.name : "사용자 선택";
+            const currentUserObj = state.users[state.activeUserId];
+            document.getElementById('currentUserDisplay').innerText = currentUserObj ? currentUserObj.name : "사용자 선택";
 
             Object.keys(state.users).forEach(uid => {
                 const user = state.users[uid];
@@ -557,6 +759,7 @@
                 renderChapterGrid();
                 renderOverallProgress();
                 renderTogetherProgressBoard();
+                syncStateToCloud();
             }
         }
 
@@ -605,6 +808,7 @@
             renderChapterGrid();
             renderOverallProgress();
             renderTogetherProgressBoard();
+            syncStateToCloud();
         }
 
         // Render Bible Books Left Sidebar
@@ -612,8 +816,8 @@
             const listContainer = document.getElementById('bibleBookList');
             listContainer.innerHTML = '';
 
-            const currentUser = state.users[state.activeUserId];
-            if (!currentUser) return;
+            const currentUserObj = state.users[state.activeUserId];
+            if (!currentUserObj) return;
 
             // Filter books based on active tab and search query
             const filteredBooks = bibleBooks.filter(book => {
@@ -629,7 +833,7 @@
             }
 
             filteredBooks.forEach(book => {
-                const userProgress = currentUser.progress[book.id] || [];
+                const userProgress = currentUserObj.progress[book.id] || [];
                 const readCount = userProgress.length;
                 const isCompleted = readCount === book.chapters;
                 const percent = Math.round((readCount / book.chapters) * 100);
@@ -638,25 +842,25 @@
                 const isActive = book.id === state.activeBookId;
                 
                 let activeStyle = isActive 
-                    ? `bg-stone-100/90 border-l-4 ${colorClasses[currentUser.color || 'emerald'].border} shadow-sm font-semibold`
+                    ? `bg-stone-100/90 border-l-4 ${colorClasses[currentUserObj.color || 'emerald'].border} shadow-sm font-semibold`
                     : 'hover:bg-stone-50/70 border-l-4 border-transparent';
 
                 bookBtn.className = `w-full text-left p-3 flex items-center justify-between text-stone-700 transition-all ${activeStyle}`;
                 bookBtn.onclick = () => selectBibleBook(book.id);
 
                 bookBtn.innerHTML = `
-                    <div class="flex flex-col">
-                        <span class="text-sm font-semibold tracking-wide flex items-center gap-1.5 font-bold">
+                    <div class="flex flex-col font-medium">
+                        <span class="text-sm tracking-wide flex items-center gap-1.5 font-bold">
                             ${book.name}
                             ${isCompleted ? `<i class="fa-solid fa-circle-check text-[11px] text-emerald-500"></i>` : ''}
                         </span>
-                        <span class="text-[10px] text-stone-400">${book.eng} &middot; 총 ${book.chapters}장</span>
+                        <span class="text-[10px] text-stone-400 font-normal">${book.eng} &middot; 총 ${book.chapters}장</span>
                     </div>
                     <div class="text-right flex flex-col items-end gap-1">
                         <span class="text-xs font-bold text-stone-600">${readCount}/${book.chapters}장</span>
                         <!-- Tiny Progress Bar -->
                         <div class="w-16 h-1 bg-stone-100 rounded-full overflow-hidden">
-                            <div class="h-full ${colorClasses[currentUser.color || 'emerald'].primary}" style="width: ${percent}%"></div>
+                            <div class="h-full ${colorClasses[currentUserObj.color || 'emerald'].primary}" style="width: ${percent}%"></div>
                         </div>
                     </div>
                 `;
@@ -702,14 +906,14 @@
             const book = bibleBooks.find(b => b.id === state.activeBookId);
             if (!book) return;
 
-            const currentUser = state.users[state.activeUserId];
-            if (!currentUser) return;
+            const currentUserObj = state.users[state.activeUserId];
+            if (!currentUserObj) return;
 
             // Set headers
             document.getElementById('activeBookName').innerText = book.name;
             document.getElementById('activeBookEnglish').innerText = book.eng;
             
-            const userProgress = currentUser.progress[book.id] || [];
+            const userProgress = currentUserObj.progress[book.id] || [];
             document.getElementById('activeBookProgressText').innerText = `읽은 진도: ${userProgress.length} / ${book.chapters}장 (${Math.round((userProgress.length / book.chapters)*100)}%)`;
 
             const container = document.getElementById('chapterMatrixContainer');
@@ -724,7 +928,7 @@
                 const btn = document.createElement('button');
                 
                 // Color configuration depending on profile theme
-                const userTheme = colorClasses[currentUser.color || 'emerald'];
+                const userTheme = colorClasses[currentUserObj.color || 'emerald'];
                 
                 let btnStyle = isChecked
                     ? `${userTheme.primary} text-white font-bold border-transparent shadow-sm scale-95`
@@ -751,20 +955,20 @@
 
         // Toggle Single Chapter check state
         function toggleChapter(bookId, chapterNum) {
-            const currentUser = state.users[state.activeUserId];
-            if (!currentUser) return;
+            const currentUserObj = state.users[state.activeUserId];
+            if (!currentUserObj) return;
 
-            if (!currentUser.progress[bookId]) {
-                currentUser.progress[bookId] = [];
+            if (!currentUserObj.progress[bookId]) {
+                currentUserObj.progress[bookId] = [];
             }
 
-            const chapterIndex = currentUser.progress[bookId].indexOf(chapterNum);
+            const chapterIndex = currentUserObj.progress[bookId].indexOf(chapterNum);
             if (chapterIndex > -1) {
                 // Remove if checked
-                currentUser.progress[bookId].splice(chapterIndex, 1);
+                currentUserObj.progress[bookId].splice(chapterIndex, 1);
             } else {
                 // Add if not checked
-                currentUser.progress[bookId].push(chapterNum);
+                currentUserObj.progress[bookId].push(chapterNum);
             }
 
             saveStateToLocalStorage();
@@ -772,6 +976,7 @@
             renderBibleBooksList();
             renderOverallProgress();
             renderTogetherProgressBoard();
+            syncStateToCloud();
         }
 
         // Bulk Actions inside Book
@@ -779,16 +984,16 @@
             const book = bibleBooks.find(b => b.id === state.activeBookId);
             if (!book) return;
 
-            const currentUser = state.users[state.activeUserId];
-            if (!currentUser) return;
+            const currentUserObj = state.users[state.activeUserId];
+            if (!currentUserObj) return;
 
             if (isCheckAll) {
                 // Populate all chapters
                 const allCh = Array.from({ length: book.chapters }, (_, i) => i + 1);
-                currentUser.progress[book.id] = allCh;
+                currentUserObj.progress[book.id] = allCh;
             } else {
                 // Clear chapters
-                currentUser.progress[book.id] = [];
+                currentUserObj.progress[book.id] = [];
             }
 
             saveStateToLocalStorage();
@@ -796,6 +1001,7 @@
             renderBibleBooksList();
             renderOverallProgress();
             renderTogetherProgressBoard();
+            syncStateToCloud();
         }
 
         // Check Up To specific chapter range
@@ -809,17 +1015,18 @@
                 return;
             }
 
-            const currentUser = state.users[state.activeUserId];
-            if (!currentUser) return;
+            const currentUserObj = state.users[state.activeUserId];
+            if (!currentUserObj) return;
 
             // Generate range 1 to targetVal
-            currentUser.progress[book.id] = Array.from({ length: targetVal }, (_, i) => i + 1);
+            currentUserObj.progress[book.id] = Array.from({ length: targetVal }, (_, i) => i + 1);
 
             saveStateToLocalStorage();
             renderChapterGrid();
             renderBibleBooksList();
             renderOverallProgress();
             renderTogetherProgressBoard();
+            syncStateToCloud();
         }
 
         // Calculates count of read chapters for a specific user object
@@ -843,16 +1050,16 @@
 
         // Render Overall User Statistics & Progress Ring
         function renderOverallProgress() {
-            const currentUser = state.users[state.activeUserId];
-            if (!currentUser) return;
+            const currentUserObj = state.users[state.activeUserId];
+            if (!currentUserObj) return;
 
             // Profile Color Setup
-            const theme = colorClasses[currentUser.color || 'emerald'];
+            const theme = colorClasses[currentUserObj.color || 'emerald'];
             const badgeColor = document.getElementById('userBadgeColor');
             badgeColor.className = `w-4 h-4 rounded-full ${theme.primary}`;
-            document.getElementById('activeUserName').innerText = currentUser.name;
+            document.getElementById('activeUserName').innerText = currentUserObj.name;
 
-            const stats = getUserTotalCount(currentUser);
+            const stats = getUserTotalCount(currentUserObj);
             const overallTotal = 1189;
 
             const percentage = Math.round((stats.total / overallTotal) * 100);
@@ -870,9 +1077,9 @@
             const strokeDashoffset = circumference - (percentage / 100) * circumference;
             circle.style.strokeDasharray = `${circumference} ${circumference}`;
             circle.style.strokeDashoffset = strokeDashoffset;
-            circle.style.stroke = currentUser.color === 'emerald' ? '#10b981' :
-                               currentUser.color === 'amber' ? '#f59e0b' :
-                               currentUser.color === 'rose' ? '#f43f5e' : '#6366f1';
+            circle.style.stroke = currentUserObj.color === 'emerald' ? '#10b981' :
+                               currentUserObj.color === 'amber' ? '#f59e0b' :
+                               currentUserObj.color === 'rose' ? '#f43f5e' : '#6366f1';
 
             // Estimated Completed date calculations
             calculateCompletionDate(stats.total);
@@ -898,7 +1105,7 @@
                         <div class="flex items-center gap-2 font-semibold">
                             <span class="w-2.5 h-2.5 rounded-full ${userTheme.primary}"></span>
                             <span class="text-stone-700">${user.name}</span>
-                            ${uid === state.activeUserId ? '<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 rounded">선택됨</span>' : ''}
+                            ${uid === state.activeUserId ? '<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 rounded font-bold">선택됨</span>' : ''}
                         </div>
                         <span class="font-bold text-stone-600">${percent}% <span class="text-[10px] text-stone-400 font-normal">(${stats.total}장)</span></span>
                     </div>
@@ -920,9 +1127,9 @@
             }
             saveStateToLocalStorage();
             
-            const currentUser = state.users[state.activeUserId];
-            if (currentUser) {
-                const stats = getUserTotalCount(currentUser);
+            const currentUserObj = state.users[state.activeUserId];
+            if (currentUserObj) {
+                const stats = getUserTotalCount(currentUserObj);
                 calculateCompletionDate(stats.total);
             }
         }
@@ -1048,6 +1255,30 @@
         function confirmModal(message) {
             return confirm(message); // Standard browser safe confirm used as backup fallback
         }
+
+        // Global Variable Mapping for compatibility with legacy HTML inline onclick events (Canvas requirement)
+        window.toggleUserDropdown = toggleUserDropdown;
+        window.openAddUserModal = openAddUserModal;
+        window.closeAddUserModal = closeAddUserModal;
+        window.selectColorBadge = selectColorBadge;
+        window.submitNewUser = submitNewUser;
+        window.filterBibleCategory = filterBibleCategory;
+        window.searchBibleBook = searchBibleBook;
+        window.selectBibleBook = selectBibleBook;
+        window.bulkCheckActiveBook = bulkCheckActiveBook;
+        window.toggleChapter = toggleChapter;
+        window.checkUpToRange = checkUpToRange;
+        window.updateDailyGoal = updateDailyGoal;
+        window.getNewVerse = getNewVerse;
+        window.openShareModal = openShareModal;
+        window.closeShareModal = closeShareModal;
+        window.copyShareCode = copyShareCode;
+        window.importShareCode = importShareCode;
+        window.switchActiveUser = switchActiveUser;
+        
+        // Cloud handlers
+        window.connectCloudRoom = connectCloudRoom;
+        window.leaveCloudRoom = leaveCloudRoom;
     </script>
 </body>
 </html>
