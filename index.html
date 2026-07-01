@@ -169,8 +169,8 @@
                 </div>
             </div>
 
-            <!-- Real-time Cloud Sync Card (실시간 무선 공유 카드) -->
-            <div id="cloudSyncCard" class="bg-gradient-to-br from-emerald-50 to-amber-50/50 rounded-2xl p-5 shadow-sm border border-emerald-100/60 relative overflow-hidden hidden">
+            <!-- Real-time Cloud Sync Card (실시간 무선 공유 카드 - 이제 기본적으로 무조건 보입니다!) -->
+            <div id="cloudSyncCard" class="bg-gradient-to-br from-emerald-50 to-amber-50/50 rounded-2xl p-5 shadow-sm border border-emerald-100/60 relative overflow-hidden">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="font-bold text-emerald-950 text-xs tracking-wide flex items-center gap-1.5">
                         <i id="cloudStatusIcon" class="fa-solid fa-cloud-arrow-up text-stone-400"></i>
@@ -179,12 +179,12 @@
                     <span id="cloudStatusBadge" class="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-semibold">연동 전</span>
                 </div>
                 <p id="cloudStatusDesc" class="text-[11px] text-stone-600 mb-3.5 leading-relaxed">
-                    원하는 방 이름을 입력하고 함께 접속해 보세요! 멀리 떨어져 있어도 실시간으로 체크 내용이 자동 공유됩니다.
+                    원하는 방 이름을 입력하고 함께 접속해 보세요! 멀리 떨어져 있어도 실시간으로 체크 내용이 자동 공유됩니다. (가입 필요 없음)
                 </p>
                 <!-- Form to Join -->
                 <div id="cloudActionForm" class="flex gap-2">
                     <input type="text" id="cloudRoomInput" placeholder="예: 은혜와지우" class="flex-grow px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600 bg-white shadow-inner font-semibold">
-                    <button onclick="connectCloudRoom()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all whitespace-nowrap">
+                    <button onclick="connectCloudRoom()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all whitespace-nowrap">
                         연동하기
                     </button>
                 </div>
@@ -497,7 +497,7 @@
             dailyGoal: 3
         };
 
-        // Firebase Cloud Variables
+        // Firebase & Fallback Wireless Variables
         let db = null;
         let auth = null;
         let appId = 'default-app-id';
@@ -505,6 +505,10 @@
         let currentRoomId = null;
         let roomUnsubscribe = null;
         let currentUser = null;
+        
+        // Fallback Web Sync Engine configuration (GitHub Pages fallback)
+        let fallbackPollInterval = null;
+        const FALLBACK_BUCKET = "oz2222_bible_sync_bucket";
 
         // Custom LocalStorage utility wrapper
         Storage.prototype.setObj = function(key, obj) {
@@ -534,6 +538,10 @@
         // Initialize Firebase dynamically based on environment configuration safely
         async function initFirebaseAndAuth() {
             const hasConfig = typeof __firebase_config !== 'undefined' && __firebase_config;
+            
+            // 연동 카드는 이제 깃허브에서도 무조건 보여집니다!
+            document.getElementById('cloudSyncCard').classList.remove('hidden');
+
             if (hasConfig) {
                 try {
                     const firebaseConfig = JSON.parse(__firebase_config);
@@ -542,9 +550,6 @@
                     db = getFirestore(app);
                     appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                     isFirebaseEnabled = true;
-
-                    // UI Reveal
-                    document.getElementById('cloudSyncCard').classList.remove('hidden');
 
                     // Rule 3: Authentication FIRST and await it
                     const initAuth = async () => {
@@ -560,7 +565,7 @@
                     onAuthStateChanged(auth, (user) => {
                         currentUser = user;
                         if (user) {
-                            console.log("실시간 서버 연결 완료:", user.uid);
+                            console.log("Firebase 클라우드 연동 완료:", user.uid);
                             // Auto join saved room if present
                             const savedRoomId = localStorage.getItem('bible_together_room_id');
                             if (savedRoomId) {
@@ -570,58 +575,126 @@
                     });
 
                 } catch (e) {
-                    console.error("Firebase 로딩 실패 (오프라인 모드로 자동 전환):", e);
+                    console.error("Firebase 로딩 실패, 폴백 무선 동기화 엔진으로 전환:", e);
+                    setupFallbackSync();
                 }
             } else {
-                console.log("현재 오프라인 로컬 저장 모드로 작동하고 있습니다.");
+                setupFallbackSync();
             }
         }
 
-        // Join a real-time Room safely using strict path (RULE 1)
-        function joinCloudRoom(roomId) {
-            if (!isFirebaseEnabled || !currentUser) return;
-            if (roomUnsubscribe) roomUnsubscribe();
+        // 깃허브 등 독립 배포 환경을 위한 무선 폴백 엔진 가동
+        function setupFallbackSync() {
+            console.log("로컬 독립 모드 및 퍼블릭 무선 연동 엔진 작동 중.");
+            const savedRoomId = localStorage.getItem('bible_together_room_id');
+            if (savedRoomId) {
+                joinCloudRoom(savedRoomId);
+            }
+        }
 
-            currentRoomId = roomId;
-            localStorage.setItem('bible_together_room_id', roomId);
-
-            // Use strictly defined path for public rooms (RULE 1)
-            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId);
-
-            // Real-time synchronization stream listener
-            roomUnsubscribe = onSnapshot(roomDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
+        // 깃허브 폴백 엔진 데이터 가져오기 (API 전송)
+        async function fetchFallbackData(roomId) {
+            try {
+                const res = await fetch(`https://kvdb.io/${FALLBACK_BUCKET}/room_${roomId}`);
+                if (res.ok) {
+                    const data = await res.json();
                     if (data && data.users) {
-                        // Merge server data into local state
+                        // 원격 데이터를 로컬 데이터로 병합 (타임스탬프가 최신인 경우에만 덮어씀)
                         Object.keys(data.users).forEach(uid => {
-                            state.users[uid] = data.users[uid];
+                            const localUser = state.users[uid];
+                            const remoteUser = data.users[uid];
+                            if (!localUser || !localUser.updatedAt || (remoteUser.updatedAt > (localUser.updatedAt || 0))) {
+                                state.users[uid] = remoteUser;
+                            }
                         });
                         saveStateToLocalStorage();
                         
-                        // Render updated layouts
+                        // 렌더링 업데이트
                         renderUsersDropdown();
                         renderBibleBooksList();
                         renderChapterGrid();
                         renderOverallProgress();
                         renderTogetherProgressBoard();
                     }
-                } else {
-                    // Initialize empty cloud document with current state
-                    setDoc(roomDocRef, { users: state.users });
                 }
+            } catch (e) {
+                console.error("폴백 수신 에러:", e);
+            }
+        }
 
-                // Update UI state to linked
-                document.getElementById('cloudStatusIcon').className = "fa-solid fa-cloud text-emerald-600 animate-pulse";
-                document.getElementById('cloudStatusBadge').className = "text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold";
-                document.getElementById('cloudStatusBadge').innerText = "연동됨";
-                document.getElementById('cloudStatusDesc').classList.add('hidden');
-                document.getElementById('cloudActionForm').classList.add('hidden');
-                document.getElementById('cloudActiveForm').classList.remove('hidden');
-                document.getElementById('activeRoomNameDisplay').innerText = roomId;
-            }, (error) => {
-                console.error("실시간 수신 에러:", error);
-            });
+        // 깃허브 폴백 엔진 데이터 저장하기
+        async function saveFallbackData(roomId) {
+            try {
+                const payload = { users: state.users };
+                await fetch(`https://kvdb.io/${FALLBACK_BUCKET}/room_${roomId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                console.error("폴백 전송 에러:", e);
+            }
+        }
+
+        // Join a real-time Room safely
+        function joinCloudRoom(roomId) {
+            currentRoomId = roomId;
+            localStorage.setItem('bible_together_room_id', roomId);
+
+            if (isFirebaseEnabled && currentUser) {
+                // --- Firebase 실시간 감지 모드 (Canvas 전용) ---
+                if (roomUnsubscribe) roomUnsubscribe();
+                const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId);
+
+                roomUnsubscribe = onSnapshot(roomDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data && data.users) {
+                            Object.keys(data.users).forEach(uid => {
+                                state.users[uid] = data.users[uid];
+                            });
+                            saveStateToLocalStorage();
+                            
+                            renderUsersDropdown();
+                            renderBibleBooksList();
+                            renderChapterGrid();
+                            renderOverallProgress();
+                            renderTogetherProgressBoard();
+                        }
+                    } else {
+                        setDoc(roomDocRef, { users: state.users });
+                    }
+
+                    // UI 연동상태 업데이트
+                    updateUIForConnected(roomId);
+                }, (error) => {
+                    console.error("실시간 수신 에러:", error);
+                });
+            } else {
+                // --- 무선 폴백 엔진 모드 (GitHub Pages 전용) ---
+                if (fallbackPollInterval) clearInterval(fallbackPollInterval);
+                
+                // 최초 즉시 동기화
+                fetchFallbackData(roomId);
+                
+                // 4초 주기 폴링 시작
+                fallbackPollInterval = setInterval(() => {
+                    fetchFallbackData(roomId);
+                }, 4000);
+
+                updateUIForConnected(roomId);
+            }
+        }
+
+        // 연동 연결 성공 시 UI 처리
+        function updateUIForConnected(roomId) {
+            document.getElementById('cloudStatusIcon').className = "fa-solid fa-cloud text-emerald-600 animate-pulse";
+            document.getElementById('cloudStatusBadge').className = "text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold";
+            document.getElementById('cloudStatusBadge').innerText = isFirebaseEnabled ? "연동됨" : "무선 연동됨";
+            document.getElementById('cloudStatusDesc').classList.add('hidden');
+            document.getElementById('cloudActionForm').classList.add('hidden');
+            document.getElementById('cloudActiveForm').classList.remove('hidden');
+            document.getElementById('activeRoomNameDisplay').innerText = roomId;
         }
 
         // Connect room triggers from UI
@@ -631,10 +704,6 @@
                 alertModal("입력된 방 이름이 없습니다. 방 이름을 입력해 주세요!");
                 return;
             }
-            if (!currentUser) {
-                alertModal("서버 연결 초기화 중입니다. 3초 후 다시 시도해 주세요.");
-                return;
-            }
             joinCloudRoom(inputVal);
             await syncStateToCloud();
         }
@@ -642,6 +711,7 @@
         // Disconnect from real-time sync
         function leaveCloudRoom() {
             if (roomUnsubscribe) roomUnsubscribe();
+            if (fallbackPollInterval) clearInterval(fallbackPollInterval);
             currentRoomId = null;
             localStorage.removeItem('bible_together_room_id');
 
@@ -657,42 +727,48 @@
             alertModal("실시간 연동이 해제되었습니다. 이제 오프라인으로 기록됩니다.");
         }
 
-        // Push current active user status to database safely (RULE 3 check)
+        // Push current active user status to database safely
         async function syncStateToCloud() {
-            if (!isFirebaseEnabled || !currentRoomId || !currentUser) return;
+            if (!currentRoomId) return;
             
             const myUserObj = state.users[state.activeUserId];
             if (!myUserObj) return;
 
-            // Strict path (RULE 1)
-            const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', currentRoomId);
+            // 업데이트 타임스탬프 설정
+            myUserObj.updatedAt = Date.now();
+            saveStateToLocalStorage();
 
-            try {
-                // Update only active user node to prevent direct collisions
-                await updateDoc(roomDocRef, {
-                    [`users.${state.activeUserId}`]: {
-                        name: myUserObj.name,
-                        color: myUserObj.color,
-                        progress: myUserObj.progress,
-                        updatedAt: Date.now()
-                    }
-                });
-            } catch (err) {
-                // Fallback to merge creation
+            if (isFirebaseEnabled && currentUser) {
+                // --- Firebase Firestore 업로드 ---
+                const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', currentRoomId);
                 try {
-                    await setDoc(roomDocRef, {
-                        users: {
-                            [state.activeUserId]: {
-                                name: myUserObj.name,
-                                color: myUserObj.color,
-                                progress: myUserObj.progress,
-                                updatedAt: Date.now()
-                            }
+                    await updateDoc(roomDocRef, {
+                        [`users.${state.activeUserId}`]: {
+                            name: myUserObj.name,
+                            color: myUserObj.color,
+                            progress: myUserObj.progress,
+                            updatedAt: myUserObj.updatedAt
                         }
-                    }, { merge: true });
-                } catch (e) {
-                    console.error("클라우드 업로드 에러:", e);
+                    });
+                } catch (err) {
+                    try {
+                        await setDoc(roomDocRef, {
+                            users: {
+                                [state.activeUserId]: {
+                                    name: myUserObj.name,
+                                    color: myUserObj.color,
+                                    progress: myUserObj.progress,
+                                    updatedAt: myUserObj.updatedAt
+                                }
+                            }
+                        }, { merge: true });
+                    } catch (e) {
+                        console.error("클라우드 업로드 에러:", e);
+                    }
                 }
+            } else {
+                // --- 폴백 엔진 업로드 ---
+                await saveFallbackData(currentRoomId);
             }
         }
 
@@ -953,7 +1029,7 @@
             }
         }
 
-        // Toggle Single Chapter check state
+        // Toggle Chapter check and update cloud database
         function toggleChapter(bookId, chapterNum) {
             const currentUserObj = state.users[state.activeUserId];
             if (!currentUserObj) return;
@@ -964,10 +1040,8 @@
 
             const chapterIndex = currentUserObj.progress[bookId].indexOf(chapterNum);
             if (chapterIndex > -1) {
-                // Remove if checked
                 currentUserObj.progress[bookId].splice(chapterIndex, 1);
             } else {
-                // Add if not checked
                 currentUserObj.progress[bookId].push(chapterNum);
             }
 
@@ -988,11 +1062,9 @@
             if (!currentUserObj) return;
 
             if (isCheckAll) {
-                // Populate all chapters
                 const allCh = Array.from({ length: book.chapters }, (_, i) => i + 1);
                 currentUserObj.progress[book.id] = allCh;
             } else {
-                // Clear chapters
                 currentUserObj.progress[book.id] = [];
             }
 
@@ -1018,7 +1090,6 @@
             const currentUserObj = state.users[state.activeUserId];
             if (!currentUserObj) return;
 
-            // Generate range 1 to targetVal
             currentUserObj.progress[book.id] = Array.from({ length: targetVal }, (_, i) => i + 1);
 
             saveStateToLocalStorage();
@@ -1053,7 +1124,6 @@
             const currentUserObj = state.users[state.activeUserId];
             if (!currentUserObj) return;
 
-            // Profile Color Setup
             const theme = colorClasses[currentUserObj.color || 'emerald'];
             const badgeColor = document.getElementById('userBadgeColor');
             badgeColor.className = `w-4 h-4 rounded-full ${theme.primary}`;
@@ -1159,7 +1229,6 @@
         let lastQuoteIndex = -1;
         function getNewVerse() {
             let nextIndex = Math.floor(Math.random() * versesList.length);
-            // Ensure we don't pick the same quote sequentially
             while(nextIndex === lastQuoteIndex) {
                 nextIndex = Math.floor(Math.random() * versesList.length);
             }
@@ -1170,7 +1239,6 @@
         // Data sharing modal & export encoding
         function openShareModal() {
             const rawJson = JSON.stringify(state);
-            // Base64 encode the string to prevent raw formatting errors on simple copies
             const base64Code = btoa(encodeURIComponent(rawJson));
             document.getElementById('shareCodeTextarea').value = base64Code;
             document.getElementById('importCodeInput').value = '';
@@ -1186,7 +1254,7 @@
         function copyShareCode() {
             const txt = document.getElementById('shareCodeTextarea');
             txt.select();
-            txt.setSelectionRange(0, 99999); // For mobile devices
+            txt.setSelectionRange(0, 99999);
             
             try {
                 const successful = document.execCommand('copy');
@@ -1219,7 +1287,6 @@
                         saveStateToLocalStorage();
                         closeShareModal();
                         
-                        // Re-initialize UI elements
                         renderUsersDropdown();
                         renderBibleBooksList();
                         renderChapterGrid();
@@ -1237,7 +1304,6 @@
 
         // CUSTOM MODALS TO REPLACE BROWSER DEFAULT DIALOGS
         function alertModal(message) {
-            // Render basic modal fallback inside iframe environment gracefully
             const div = document.createElement('div');
             div.className = "fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center z-[100] p-4";
             div.innerHTML = `
@@ -1253,7 +1319,7 @@
         }
 
         function confirmModal(message) {
-            return confirm(message); // Standard browser safe confirm used as backup fallback
+            return confirm(message);
         }
 
         // Global Variable Mapping for compatibility with legacy HTML inline onclick events (Canvas requirement)
