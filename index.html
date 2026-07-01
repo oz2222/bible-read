@@ -34,11 +34,11 @@
             background: #f1ede4;
         }
         ::-webkit-scrollbar-thumb {
-            background: #c5bfae;
+            background: #cbd5e1;
             border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #a39c89;
+            background: #94a3b8;
         }
         .chapter-btn {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -53,273 +53,361 @@
 </head>
 <body class="text-stone-800 min-h-screen flex flex-col antialiased">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-emerald-900 text-stone-100 shadow-md sticky top-0 z-40 transition-all">
-        <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="bg-amber-100 text-emerald-900 w-10 h-10 rounded-full flex items-center justify-center shadow-inner">
-                    <i class="fa-solid fa-book-bible text-xl"></i>
+    <!-- LOBBY SCREEN (방 선택 / 방 만들기 대기실 화면) -->
+    <div id="lobbyScreen" class="flex-grow flex flex-col justify-between max-w-2xl w-full mx-auto p-4 md:p-6 space-y-6">
+        <div class="space-y-6 mt-4">
+            <!-- Lobby Header -->
+            <div class="text-center py-6">
+                <div class="bg-emerald-900 text-amber-100 w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-md rotate-3">
+                    <i class="fa-solid fa-book-bible text-3xl"></i>
                 </div>
-                <div>
-                    <h1 class="text-lg md:text-xl font-bold tracking-tight flex items-center gap-2">
-                        <span>우리 함께 성경 읽기</span>
-                        <span class="text-xs bg-emerald-800 text-amber-200 border border-emerald-700 px-2 py-0.5 rounded-full font-normal">신구약 완독표</span>
-                    </h1>
-                    <p class="text-xs text-emerald-200/80 font-light hidden sm:block">"주의 말씀은 내 발에 등이요 내 길에 빛이니이다" (시 119:105)</p>
-                </div>
+                <h1 class="text-2xl font-black text-stone-800 tracking-tight">우리 함께 성경 읽기</h1>
+                <p class="text-xs text-stone-400 mt-1.5 leading-relaxed italic">
+                    "두세 사람이 내 이름으로 모인 곳에는 나도 그들 중에 있느니라" (마 18:20)
+                </p>
             </div>
 
-            <!-- Profile and Options Buttons -->
-            <div class="flex items-center gap-2">
-                <!-- User Selector Dropdown -->
-                <div class="relative inline-block text-left">
-                    <button id="userDropdownBtn" onclick="toggleUserDropdown()" class="bg-emerald-800 hover:bg-emerald-700 text-stone-100 px-3.5 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 border border-emerald-700 shadow-sm transition-all">
-                        <i class="fa-solid fa-user-circle text-lg text-amber-300"></i>
-                        <span id="currentUserDisplay">사용자 선택</span>
-                        <i class="fa-solid fa-chevron-down text-xs opacity-70"></i>
-                    </button>
-                    <!-- Dropdown Menu -->
-                    <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-stone-100 z-50 animate-fade-in-down origin-top-right">
-                        <div class="py-1" id="userListContainer">
-                            <!-- Dynamic User Profiles go here -->
-                        </div>
-                        <div class="py-1.5 px-3">
-                            <button onclick="openAddUserModal()" class="w-full text-left px-2 py-1.5 text-xs text-emerald-700 font-medium hover:bg-emerald-50 rounded-lg flex items-center gap-1.5">
-                                <i class="fa-solid fa-plus-circle"></i> 함께 읽을 사람 추가
-                            </button>
-                        </div>
+            <!-- Profile Info Widget -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/60 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="lobbyUserColor" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
+                        <!-- Initial or Emoji -->
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-stone-400 block font-bold">접속 프로필</span>
+                        <span id="lobbyUserName" class="text-base font-bold text-stone-800">성경 읽는 나</span>
                     </div>
                 </div>
-
-                <!-- Shared/Sync Option -->
-                <button onclick="openShareModal()" class="bg-amber-600 hover:bg-amber-500 text-white p-2 rounded-lg text-sm font-medium shadow-sm transition-all" title="데이터 공유 및 백업">
-                    <i class="fa-solid fa-share-nodes"></i>
+                <button onclick="openEditUserModal()" class="bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold px-3 py-1.5 rounded-xl text-xs transition-all flex items-center gap-1">
+                    <i class="fa-solid fa-user-pen"></i> 수정
                 </button>
             </div>
+
+            <!-- Rooms List Card -->
+            <div class="bg-white rounded-3xl p-5 shadow-sm border border-stone-200/80 space-y-4">
+                <h2 class="font-black text-base text-stone-800 flex items-center gap-2 pb-2 border-b border-stone-100">
+                    <i class="fa-solid fa-users text-emerald-700"></i> 나의 성경 읽기방 목록
+                </h2>
+
+                <div id="roomsContainer" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+                    <!-- Dynamic Joined Rooms Lists -->
+                </div>
+
+                <!-- Create & Join Buttons -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="openCreateRoomModal()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-black py-3 px-4 rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-plus-circle"></i> 새로운 방 만들기
+                    </button>
+                    <button onclick="openJoinRoomModal()" class="bg-amber-600 hover:bg-amber-500 text-white font-black py-3 px-4 rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-key"></i> 코드로 참가하기
+                    </button>
+                </div>
+            </div>
         </div>
-    </header>
 
-    <!-- Main Content Grid -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <footer class="text-center text-[10px] text-stone-400 py-4">
+            우리 함께 성경 읽기표 &copy; 2026 &middot; 모든 데이터는 기기에 자동 보관됩니다.
+        </footer>
+    </div>
 
-        <!-- Left Panel: Profile Progression Comparison & motivational quotes -->
-        <section class="lg:col-span-4 space-y-6">
 
-            <!-- Profile Card -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80 relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 text-stone-100 pointer-events-none opacity-40">
-                    <i class="fa-solid fa-dove text-9xl"></i>
-                </div>
-                
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2.5">
-                        <div id="userBadgeColor" class="w-4 h-4 rounded-full bg-emerald-600"></div>
-                        <h2 class="text-xl font-bold text-stone-800" id="activeUserName">나</h2>
+    <!-- MAIN READ SCREEN (방 입장 후 보게 되는 진짜 읽기표 화면, 처음에는 hidden) -->
+    <div id="readScreen" class="hidden flex-grow flex flex-col">
+        <!-- Top Navigation Header -->
+        <header class="bg-emerald-900 text-stone-100 shadow-md sticky top-0 z-40 transition-all">
+            <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <button onclick="exitToLobby()" class="bg-emerald-800 hover:bg-emerald-700 text-amber-200 w-9 h-9 rounded-full flex items-center justify-center shadow-inner transition-all" title="방 목록으로 가기">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h1 class="text-base md:text-lg font-black tracking-tight flex items-center gap-1.5">
+                            <span id="activeRoomNameDisplay">방 이름</span>
+                            <span onclick="copyActiveRoomCode()" id="activeRoomCodeBadge" class="text-[10px] bg-emerald-800 text-amber-200 border border-emerald-700 px-2 py-0.5 rounded-full font-bold cursor-pointer hover:bg-emerald-700">CODE</span>
+                        </h1>
+                        <p class="text-[10px] text-emerald-200/80 font-light" id="activeRoomSubDisplay">주의 말씀은 내 발에 등이요 내 길에 빛이니이다</p>
                     </div>
-                    <span class="text-xs text-stone-500 font-medium" id="bibleCompleteDateEstimation">완독 예정일 계산 중...</span>
                 </div>
 
-                <!-- Main Progress Ring & Stat -->
-                <div class="flex items-center gap-5 my-4">
-                    <div class="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-full h-full transform -rotate-90">
-                            <!-- Track -->
-                            <circle cx="48" cy="48" r="40" stroke="#f1ede4" stroke-width="8" fill="transparent" />
-                            <!-- Progress Bar -->
-                            <circle id="progressRing" cx="48" cy="48" r="40" stroke="#10b981" stroke-width="8" fill="transparent" 
-                                    stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" class="transition-all duration-500" />
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span class="text-lg font-black tracking-tight" id="progressPercentage">0%</span>
-                            <span class="text-[10px] text-stone-400 font-bold uppercase">Progress</span>
-                        </div>
-                    </div>
-
-                    <div class="flex-grow space-y-1.5 min-w-0">
-                        <div>
-                            <span class="text-xs text-stone-400 font-semibold block">총 읽은 분량</span>
-                            <span class="text-lg font-bold text-stone-700 truncate block"><span id="totalCheckedChapters">0</span> <span class="text-xs text-stone-400">/ 1,189 장</span></span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-2 pt-1 border-t border-stone-100">
-                            <div>
-                                <span class="text-[10px] text-stone-400 block font-semibold">구약 (929장)</span>
-                                <span class="text-xs font-bold text-stone-600" id="otProgressText">0 / 929</span>
+                <!-- Profile and Options Buttons -->
+                <div class="flex items-center gap-2">
+                    <!-- User Selector Dropdown -->
+                    <div class="relative inline-block text-left">
+                        <button id="userDropdownBtn" onclick="toggleUserDropdown()" class="bg-emerald-800 hover:bg-emerald-700 text-stone-100 px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-700 shadow-sm transition-all">
+                            <i class="fa-solid fa-user-circle text-lg text-amber-300"></i>
+                            <span id="currentUserDisplay">사용자 선택</span>
+                            <i class="fa-solid fa-chevron-down text-xs opacity-70"></i>
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-stone-100 z-50 animate-fade-in-down origin-top-right">
+                            <div class="py-1" id="userListContainer">
+                                <!-- Dynamic User Profiles go here -->
                             </div>
-                            <div>
-                                <span class="text-[10px] text-stone-400 block font-semibold">신약 (260장)</span>
-                                <span class="text-xs font-bold text-stone-600" id="ntProgressText">0 / 260</span>
+                            <div class="py-1.5 px-3 space-y-1">
+                                <button onclick="openEditUserModal()" class="w-full text-left px-2 py-1.5 text-xs text-stone-600 font-medium hover:bg-stone-50 rounded-lg flex items-center gap-1.5">
+                                    <i class="fa-solid fa-user-pen"></i> 내 이름 수정하기
+                                </button>
+                                <button onclick="openAddUserModal()" class="w-full text-left px-2 py-1.5 text-xs text-emerald-700 font-medium hover:bg-emerald-50 rounded-lg flex items-center gap-1.5">
+                                    <i class="fa-solid fa-plus-circle"></i> 함께 읽을 사람 추가
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </header>
 
-                <!-- Settings: Target Daily Reading -->
-                <div class="bg-stone-50 rounded-xl p-3 border border-stone-100 text-xs text-stone-600 space-y-2.5">
-                    <div class="flex justify-between items-center">
-                        <span class="font-medium">하루 목표 읽기 분량:</span>
-                        <div class="flex items-center gap-1.5">
-                            <input type="number" id="dailyGoalInput" value="3" min="1" max="100" onchange="updateDailyGoal()" class="w-12 text-center border border-stone-300 rounded px-1 py-0.5 focus:outline-emerald-600 font-bold text-stone-800">
-                            <span>장씩</span>
-                        </div>
+        <!-- Main Content Grid -->
+        <main class="flex-grow max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Left Panel: Profile Progression Comparison & motivational quotes -->
+            <section class="lg:col-span-4 space-y-6">
+
+                <!-- Profile Card -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80 relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-stone-100 pointer-events-none opacity-40">
+                        <i class="fa-solid fa-dove text-9xl"></i>
                     </div>
-                    <div class="flex justify-between items-center text-stone-500">
-                        <span>완독 소요 일수:</span>
-                        <span class="font-semibold text-stone-700" id="remainingDaysDisplay">약 397일</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Real-time Cloud Sync Card (실시간 무선 공유 카드 - 이제 기본적으로 무조건 보입니다!) -->
-            <div id="cloudSyncCard" class="bg-gradient-to-br from-emerald-50 to-amber-50/50 rounded-2xl p-5 shadow-sm border border-emerald-100/60 relative overflow-hidden">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="font-bold text-emerald-950 text-xs tracking-wide flex items-center gap-1.5">
-                        <i id="cloudStatusIcon" class="fa-solid fa-cloud-arrow-up text-stone-400"></i>
-                        <span>실시간 무선 연동방</span>
-                    </h3>
-                    <span id="cloudStatusBadge" class="text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-semibold">연동 전</span>
-                </div>
-                <p id="cloudStatusDesc" class="text-[11px] text-stone-600 mb-3.5 leading-relaxed">
-                    원하는 방 이름을 입력하고 함께 접속해 보세요! 멀리 떨어져 있어도 실시간으로 체크 내용이 자동 공유됩니다. (가입 필요 없음)
-                </p>
-                <!-- Form to Join -->
-                <div id="cloudActionForm" class="flex gap-2">
-                    <input type="text" id="cloudRoomInput" placeholder="예: 은혜와지우" class="flex-grow px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600 bg-white shadow-inner font-semibold">
-                    <button onclick="connectCloudRoom()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all whitespace-nowrap">
-                        연동하기
-                    </button>
-                </div>
-                <!-- Connected Status UI -->
-                <div id="cloudActiveForm" class="hidden flex items-center justify-between bg-white/90 p-3 rounded-xl border border-emerald-100/50 shadow-sm">
-                    <div class="truncate mr-2">
-                        <span class="text-[9px] text-stone-400 block font-bold">실시간 연동 중인 방</span>
-                        <span id="activeRoomNameDisplay" class="text-xs font-bold text-emerald-800 truncate block">은혜와지우</span>
-                    </div>
-                    <button onclick="leaveCloudRoom()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/40 font-bold px-2.5 py-1.5 rounded-lg text-[10px] transition-all whitespace-nowrap">
-                        연동 해제
-                    </button>
-                </div>
-            </div>
-
-            <!-- Together Board (Dynamic Comparison with others) -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80">
-                <h3 class="font-bold text-stone-800 text-sm tracking-wide uppercase mb-3.5 flex items-center justify-between">
-                    <span><i class="fa-solid fa-users-rectangle text-emerald-600 mr-1.5"></i>멤버별 읽기 현황판</span>
-                    <span class="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">진도 비교</span>
-                </h3>
-                <div class="space-y-4" id="compareUsersContainer">
-                    <!-- Dynamic progression bars for all users -->
-                </div>
-            </div>
-
-            <!-- Helpful Bible Quotes / Motivation widget -->
-            <div class="bg-amber-50/70 border border-amber-200/50 rounded-2xl p-4 text-stone-700 text-xs relative">
-                <i class="fa-solid fa-quote-left absolute top-3 left-3 text-amber-200 text-2xl"></i>
-                <div class="pl-6 relative z-10">
-                    <p id="motivationalVerse" class="italic leading-relaxed font-medium text-stone-600">"여호와의 율법은 완전하여 영혼을 소성시키며 여호와의 증거는 확실하여 우둔한 자를 지혜롭게 하며" (시편 19:7)</p>
-                    <button onclick="getNewVerse()" class="mt-2 text-[10px] font-bold text-amber-800 hover:text-amber-900 flex items-center gap-1">
-                        <i class="fa-solid fa-rotate-left"></i> 다른 구절 보기
-                    </button>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- Right Panel: Bible Books Checklist & Selection -->
-        <section class="lg:col-span-8 space-y-6">
-
-            <!-- Category & Search Tabs -->
-            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-stone-200/80 flex flex-wrap items-center justify-between gap-3">
-                <!-- Tabs -->
-                <div class="flex bg-stone-100 p-1 rounded-xl gap-1">
-                    <button onclick="filterBibleCategory('전체')" id="tabBtn_전체" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all bg-white text-stone-800 shadow-sm">
-                        전체 (66권)
-                    </button>
-                    <button onclick="filterBibleCategory('구약')" id="tabBtn_구약" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all text-stone-500 hover:text-stone-800">
-                        구약 (39권)
-                    </button>
-                    <button onclick="filterBibleCategory('신약')" id="tabBtn_신약" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all text-stone-500 hover:text-stone-800">
-                        신약 (27권)
-                    </button>
-                </div>
-
-                <!-- Simple Search bar -->
-                <div class="relative w-full sm:w-auto">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-stone-400 text-xs"></i>
-                    <input type="text" id="searchInput" oninput="searchBibleBook()" placeholder="성경 책 이름 검색... (예: 창세)" class="w-full sm:w-48 pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600">
-                </div>
-            </div>
-
-            <!-- Double-Column Flex View (Left: Bible Books List, Right: Interactive Chapter Checker) -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[500px]">
-
-                <!-- Bible Books Selector (List) -->
-                <div class="md:col-span-5 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-3 flex flex-col max-h-[550px]">
-                    <span class="text-xs text-stone-400 font-bold px-2 py-1 flex items-center gap-1 border-b border-stone-100 pb-2">
-                        <i class="fa-solid fa-scroll"></i> 성경 목록 선택
-                    </span>
-                    <div class="overflow-y-auto flex-grow divide-y divide-stone-100/60 pr-1 mt-2" id="bibleBookList">
-                        <!-- Bible Book Buttons will load dynamically -->
-                    </div>
-                </div>
-
-                <!-- Interactive Chapter Board -->
-                <div class="md:col-span-7 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-4 md:p-5 flex flex-col justify-between max-h-[550px]">
                     
-                    <div class="flex-grow flex flex-col overflow-hidden">
-                        <!-- Active Book Title Header -->
-                        <div class="border-b border-stone-100 pb-3 mb-4 flex flex-wrap items-center justify-between gap-2">
-                            <div>
-                                <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2">
-                                    <span id="activeBookName">창세기</span>
-                                    <span id="activeBookEnglish" class="text-xs text-stone-400 font-medium italic">Genesis</span>
-                                </h3>
-                                <p class="text-xs text-stone-400 font-medium mt-0.5" id="activeBookProgressText">읽은 진도: 0 / 50장</p>
-                            </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div id="userBadgeColor" class="w-4 h-4 rounded-full bg-emerald-600"></div>
+                            <h2 class="text-xl font-bold text-stone-800" id="activeUserName">나</h2>
+                        </div>
+                        <span class="text-xs text-stone-500 font-medium" id="bibleCompleteDateEstimation">완독 예정일 계산 중...</span>
+                    </div>
 
-                            <!-- Fast-Action Bulk Controls -->
-                            <div class="flex gap-1">
-                                <button onclick="bulkCheckActiveBook(true)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded text-[11px] font-bold transition-all">
-                                    <i class="fa-solid fa-check-double mr-0.5"></i> 전체 선택
-                                </button>
-                                <button onclick="bulkCheckActiveBook(false)" class="bg-stone-50 hover:bg-stone-100 text-stone-500 px-2.5 py-1 rounded text-[11px] font-bold transition-all border border-stone-200/40">
-                                    초기화
-                                </button>
+                    <!-- Main Progress Ring & Stat -->
+                    <div class="flex items-center gap-5 my-4">
+                        <div class="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-full h-full transform -rotate-90">
+                                <!-- Track -->
+                                <circle cx="48" cy="48" r="40" stroke="#f1ede4" stroke-width="8" fill="transparent" />
+                                <!-- Progress Bar -->
+                                <circle id="progressRing" cx="48" cy="48" r="40" stroke="#10b981" stroke-width="8" fill="transparent" 
+                                        stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" class="transition-all duration-500" />
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-lg font-black tracking-tight" id="progressPercentage">0%</span>
+                                <span class="text-[10px] text-stone-400 font-bold uppercase">Progress</span>
                             </div>
                         </div>
 
-                        <!-- Main Chapter Buttons Matrix Grid -->
-                        <div class="overflow-y-auto flex-grow pr-1" id="chapterMatrixContainer">
-                            <!-- Chapter Grid Buttons will load here dynamically -->
+                        <div class="flex-grow space-y-1.5 min-w-0">
+                            <div>
+                                <span class="text-xs text-stone-400 font-semibold block">총 읽은 분량</span>
+                                <span class="text-lg font-bold text-stone-700 truncate block"><span id="totalCheckedChapters">0</span> <span class="text-xs text-stone-400">/ 1,189 장</span></span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-stone-100">
+                                <div>
+                                    <span class="text-[10px] text-stone-400 block font-semibold">구약 (929장)</span>
+                                    <span class="text-xs font-bold text-stone-600" id="otProgressText">0 / 929</span>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-stone-400 block font-semibold">신약 (260장)</span>
+                                    <span class="text-xs font-bold text-stone-600" id="ntProgressText">0 / 260</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Custom Range/Bulk check helper footer -->
-                    <div class="bg-stone-50 border border-stone-100 rounded-xl p-3.5 mt-4 text-xs">
-                        <div class="flex flex-wrap items-center justify-between gap-2">
-                            <span class="text-stone-500 font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-0.5 text-amber-500"></i> 몰아서 선택하기:</span>
+                    <!-- Settings: Target Daily Reading -->
+                    <div class="bg-stone-50 rounded-xl p-3 border border-stone-100 text-xs text-stone-600 space-y-2.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium">하루 목표 읽기 분량:</span>
                             <div class="flex items-center gap-1.5">
-                                <input type="number" id="bulkRangeValue" min="1" max="150" value="10" class="w-12 text-center border border-stone-300 rounded px-1.5 py-0.5 text-stone-800 font-bold">
-                                <span class="text-stone-500">장까지 한 번에</span>
-                                <button onclick="checkUpToRange()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded transition-all">확인</button>
+                                <input type="number" id="dailyGoalInput" value="3" min="1" max="100" onchange="updateDailyGoal()" class="w-12 text-center border border-stone-300 rounded px-1 py-0.5 focus:outline-emerald-600 font-bold text-stone-800">
+                                <span>장씩</span>
                             </div>
                         </div>
+                        <div class="flex justify-between items-center text-stone-500">
+                            <span>완독 소요 일수:</span>
+                            <span class="font-semibold text-stone-700" id="remainingDaysDisplay">약 397일</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Together Board (Dynamic Comparison with others) -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80">
+                    <h3 class="font-bold text-stone-800 text-sm tracking-wide uppercase mb-3.5 flex items-center justify-between">
+                        <span><i class="fa-solid fa-users-rectangle text-emerald-600 mr-1.5"></i>멤버별 읽기 현황판</span>
+                        <span class="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full font-medium animate-pulse">실시간 연동중</span>
+                    </h3>
+                    <div class="space-y-4" id="compareUsersContainer">
+                        <!-- Dynamic progression bars for all users -->
+                    </div>
+                </div>
+
+                <!-- Helpful Bible Quotes / Motivation widget -->
+                <div class="bg-amber-50/70 border border-amber-200/50 rounded-2xl p-4 text-stone-700 text-xs relative">
+                    <i class="fa-solid fa-quote-left absolute top-3 left-3 text-amber-200 text-2xl"></i>
+                    <div class="pl-6 relative z-10">
+                        <p id="motivationalVerse" class="italic leading-relaxed font-medium text-stone-600">"여호와의 율법은 완전하여 영혼을 소성시키며 여호와의 증거는 확실하여 우둔한 자를 지혜롭게 하며" (시편 19:7)</p>
+                        <button onclick="getNewVerse()" class="mt-2 text-[10px] font-bold text-amber-800 hover:text-amber-900 flex items-center gap-1">
+                            <i class="fa-solid fa-rotate-left"></i> 다른 구절 보기
+                        </button>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Right Panel: Bible Books Checklist & Selection -->
+            <section class="lg:col-span-8 space-y-6">
+
+                <!-- Category & Search Tabs -->
+                <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-stone-200/80 flex flex-wrap items-center justify-between gap-3">
+                    <!-- Tabs -->
+                    <div class="flex bg-stone-100 p-1 rounded-xl gap-1">
+                        <button onclick="filterBibleCategory('전체')" id="tabBtn_전체" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all bg-white text-stone-800 shadow-sm">
+                            전체 (66권)
+                        </button>
+                        <button onclick="filterBibleCategory('구약')" id="tabBtn_구약" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all text-stone-500 hover:text-stone-800">
+                            구약 (39권)
+                        </button>
+                        <button onclick="filterBibleCategory('신약')" id="tabBtn_신약" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all text-stone-500 hover:text-stone-800">
+                            신약 (27권)
+                        </button>
+                    </div>
+
+                    <!-- Simple Search bar -->
+                    <div class="relative w-full sm:w-auto">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-stone-400 text-xs"></i>
+                        <input type="text" id="searchInput" oninput="searchBibleBook()" placeholder="성경 책 이름 검색... (예: 창세)" class="w-full sm:w-48 pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600">
+                    </div>
+                </div>
+
+                <!-- Double-Column View (Left: Bible Books List, Right: Interactive Chapter Checker) -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[500px]">
+
+                    <!-- Bible Books Selector (List) -->
+                    <div class="md:col-span-5 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-3 flex flex-col max-h-[550px]">
+                        <span class="text-xs text-stone-400 font-bold px-2 py-1 flex items-center gap-1 border-b border-stone-100 pb-2">
+                            <i class="fa-solid fa-scroll"></i> 성경 목록 선택
+                        </span>
+                        <div class="overflow-y-auto flex-grow divide-y divide-stone-100/60 pr-1 mt-2" id="bibleBookList">
+                            <!-- Bible Book Buttons will load dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Interactive Chapter Board -->
+                    <div class="md:col-span-7 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-4 md:p-5 flex flex-col justify-between max-h-[550px]">
+                        
+                        <div class="flex-grow flex flex-col overflow-hidden">
+                            <!-- Active Book Title Header -->
+                            <div class="border-b border-stone-100 pb-3 mb-4 flex flex-wrap items-center justify-between gap-2">
+                                <div>
+                                    <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2">
+                                        <span id="activeBookName">창세기</span>
+                                        <span id="activeBookEnglish" class="text-xs text-stone-400 font-medium italic">Genesis</span>
+                                    </h3>
+                                    <p class="text-xs text-stone-400 font-medium mt-0.5" id="activeBookProgressText">읽은 진도: 0 / 50장</p>
+                                </div>
+
+                                <!-- Fast-Action Bulk Controls -->
+                                <div class="flex gap-1">
+                                    <button onclick="bulkCheckActiveBook(true)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded text-[11px] font-bold transition-all">
+                                        <i class="fa-solid fa-check-double mr-0.5"></i> 전체 선택
+                                    </button>
+                                    <button onclick="bulkCheckActiveBook(false)" class="bg-stone-50 hover:bg-stone-100 text-stone-500 px-2.5 py-1 rounded text-[11px] font-bold transition-all border border-stone-200/40">
+                                        초기화
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Main Chapter Buttons Matrix Grid -->
+                            <div class="overflow-y-auto flex-grow pr-1" id="chapterMatrixContainer">
+                                <!-- Chapter Grid Buttons will load here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Custom Range/Bulk check helper footer -->
+                        <div class="bg-stone-50 border border-stone-100 rounded-xl p-3.5 mt-4 text-xs">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-stone-500 font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-0.5 text-amber-500"></i> 몰아서 선택하기:</span>
+                                <div class="flex items-center gap-1.5">
+                                    <input type="number" id="bulkRangeValue" min="1" max="150" value="10" class="w-12 text-center border border-stone-300 rounded px-1.5 py-0.5 text-stone-800 font-bold">
+                                    <span class="text-stone-500">장까지 한 번에</span>
+                                    <button onclick="checkUpToRange()" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded transition-all">확인</button>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                 </div>
 
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modals (Popups) Area -->
+
+    <!-- FIRST VISIT WELCOME MODAL (최초 실행 시 나만의 프로필 설정) -->
+    <div id="welcomeModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-scale-up border border-stone-100 text-center">
+            <div class="bg-emerald-100 text-emerald-950 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <i class="fa-solid fa-book-bible text-3xl"></i>
+            </div>
+            <h3 class="font-black text-xl text-stone-800 mb-2">반갑습니다! 😊</h3>
+            <p class="text-xs text-stone-500 mb-6 leading-relaxed">
+                나만의 예쁜 성경 읽기표 작성을 시작합니다.<br>
+                화면에 표시될 **본인의 이름(아이디)**을 정해 주세요.
+            </p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-[11px] font-bold text-stone-400 mb-1" for="welcomeUserName">내 이름 / 닉네임</label>
+                    <input type="text" id="welcomeUserName" placeholder="예: 은혜, 지우, 박성경" class="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-emerald-600 font-semibold text-stone-800">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-stone-400 mb-1">테마 컬러</label>
+                    <div class="grid grid-cols-4 gap-2" id="welcomeColorPicker">
+                        <button onclick="selectWelcomeColor('emerald')" class="w-color-badge border-2 border-emerald-600 w-full py-2 bg-emerald-500 rounded-lg text-white font-bold text-xs">초록</button>
+                        <button onclick="selectWelcomeColor('amber')" class="w-color-badge border-2 border-transparent w-full py-2 bg-amber-500 rounded-lg text-white font-bold text-xs">황토</button>
+                        <button onclick="selectWelcomeColor('rose')" class="w-color-badge border-2 border-transparent w-full py-2 bg-rose-500 rounded-lg text-white font-bold text-xs">장미</button>
+                        <button onclick="selectWelcomeColor('blue')" class="w-color-badge border-2 border-transparent w-full py-2 bg-indigo-500 rounded-lg text-white font-bold text-xs">바다</button>
+                    </div>
+                </div>
             </div>
 
-        </section>
+            <button onclick="submitWelcomeProfile()" class="mt-6 w-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-3 rounded-2xl text-sm transition-all shadow-md">
+                성경 읽기 시작하기!
+            </button>
+        </div>
+    </div>
 
-    </main>
+    <!-- EDIT USER PROFILE MODAL (이름/색상 수정 모달) -->
+    <div id="editUserModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in border border-stone-100">
+            <h3 class="font-bold text-lg text-stone-800 mb-4 flex items-center gap-1.5">
+                <i class="fa-solid fa-user-pen text-emerald-600"></i> 내 프로필 설정 변경
+            </h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-500 mb-1" for="editUserName">내 이름 수정</label>
+                    <input type="text" id="editUserName" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-emerald-600 font-semibold text-stone-800">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-stone-500 mb-1">테마 컬러 변경</label>
+                    <div class="grid grid-cols-4 gap-2" id="editColorPickerContainer">
+                        <button onclick="selectEditColorBadge('emerald')" class="edit-color-badge border-2 border-transparent w-full py-2 bg-emerald-500 rounded-lg text-white font-bold text-xs">초록</button>
+                        <button onclick="selectEditColorBadge('amber')" class="edit-color-badge border-2 border-transparent w-full py-2 bg-amber-500 rounded-lg text-white font-bold text-xs">황토</button>
+                        <button onclick="selectEditColorBadge('rose')" class="edit-color-badge border-2 border-transparent w-full py-2 bg-rose-500 rounded-lg text-white font-bold text-xs">장미</button>
+                        <button onclick="selectEditColorBadge('blue')" class="edit-color-badge border-2 border-transparent w-full py-2 bg-indigo-500 rounded-lg text-white font-bold text-xs">바다</button>
+                    </div>
+                </div>
+            </div>
 
-    <!-- Footer Area -->
-    <footer class="bg-stone-100 border-t border-stone-200 py-6 mt-12 text-center text-xs text-stone-500">
-        <p class="font-semibold mb-1">우리 함께 성경 읽기표 &copy; 2026</p>
-        <p>함께 읽는 분들과 독서 진도를 공유하며 성경을 통독해 보세요.</p>
-    </footer>
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeEditUserModal()" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-2 rounded-xl text-sm transition-all">취소</button>
+                <button onclick="submitEditUser()" class="flex-1 bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-sm transition-all">변경하기</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- ADD USER PROFILE MODAL -->
+    <!-- ADD USER PROFILE MODAL (방 내부에 수동으로 가상 멤버 추가) -->
     <div id="addUserModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in border border-stone-100">
             <h3 class="font-bold text-lg text-stone-800 mb-4 flex items-center gap-1.5">
@@ -385,6 +473,49 @@
             </div>
         </div>
     </div>
+
+    <!-- CREATE ROOM MODAL (새 방 만들기 팝업) -->
+    <div id="createRoomModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in border border-stone-100">
+            <h3 class="font-bold text-lg text-stone-800 mb-4 flex items-center gap-1.5">
+                <i class="fa-solid fa-plus-circle text-emerald-700"></i> 새로운 성경 방 만들기
+            </h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-500 mb-1" for="newRoomNameInput">읽기 그룹/방 이름</label>
+                    <input type="text" id="newRoomNameInput" placeholder="예: 우리 가족 성경통독, 고향 친구들" class="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-emerald-600 font-semibold text-stone-800">
+                </div>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeCreateRoomModal()" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-2 rounded-xl text-sm transition-all">취소</button>
+                <button onclick="submitCreateRoom()" class="flex-1 bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-sm transition-all">만들기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JOIN ROOM MODAL (코드로 방 참여 팝업) -->
+    <div id="joinRoomModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-fade-in border border-stone-100">
+            <h3 class="font-bold text-lg text-stone-800 mb-4 flex items-center gap-1.5">
+                <i class="fa-solid fa-key text-amber-600"></i> 초대로 성경 방 참여하기
+            </h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-stone-500 mb-1" for="joinRoomCodeInput">방 초대 코드 (6자리)</label>
+                    <input type="text" id="joinRoomCodeInput" placeholder="예: B-A93D" class="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-emerald-600 font-bold tracking-wider text-stone-800 uppercase text-center text-lg">
+                </div>
+            </div>
+
+            <div class="flex gap-2 mt-6">
+                <button onclick="closeJoinRoomModal()" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-2 rounded-xl text-sm transition-all">취소</button>
+                <button onclick="submitJoinRoom()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-xl text-sm transition-all">참여하기</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- SCRIPT LOGIC (Firebase SDK modules included natively!) -->
     <script type="module">
@@ -475,7 +606,7 @@
             "\"모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니\" (딤후 3:16)"
         ];
 
-        // Theme colors configurations
+        // Global Design Tokens
         const colorClasses = {
             emerald: { primary: 'bg-emerald-600', text: 'text-emerald-700', bg: 'bg-emerald-50', hover: 'hover:bg-emerald-100', border: 'border-emerald-600', ring: 'ring-emerald-500', btnActive: 'bg-emerald-600 text-white' },
             amber: { primary: 'bg-amber-600', text: 'text-amber-700', bg: 'bg-amber-50', hover: 'hover:bg-amber-100', border: 'border-amber-600', ring: 'ring-amber-500', btnActive: 'bg-amber-600 text-white' },
@@ -485,40 +616,55 @@
 
         // Application State
         let state = {
-            users: {
-                "user_1": { name: "나", color: "emerald", progress: {} },
-                "user_2": { name: "함께 읽는 분", color: "amber", progress: {} }
-            },
-            activeUserId: "user_1",
-            activeBookId: 1, // Start with Genesis
+            myProfile: null, // { id, name, color }
+            myRooms: [], // [{ id, name }]
+            currentRoomId: null, // Currently joined roomId
+            
+            // Current Room Inside states
+            users: {}, 
+            activeUserId: "",
+            activeBookId: 1,
             categoryFilter: "전체",
             searchQuery: "",
             selectedModalColor: "emerald",
             dailyGoal: 3
         };
 
-        // Firebase & Fallback Wireless Variables
+        // Firebase & Fallback Variables
         let db = null;
         let auth = null;
         let appId = 'default-app-id';
         let isFirebaseEnabled = false;
-        let currentRoomId = null;
         let roomUnsubscribe = null;
         let currentUser = null;
         
-        // Fallback Web Sync Engine configuration (GitHub Pages fallback)
         let fallbackPollInterval = null;
-        const FALLBACK_BUCKET = "oz2222_bible_sync_bucket";
+        const FALLBACK_BUCKET = "oz2222ReadSync"; // Global KVDB storage key
 
-        // Custom LocalStorage utility wrapper
-        Storage.prototype.setObj = function(key, obj) {
-            return this.setItem(key, JSON.stringify(obj))
+        // Save State strictly to Local Storage
+        function saveStateToLocalStorage() {
+            localStorage.setObj('bible_rooms_state_v3', state);
         }
-        Storage.prototype.getObj = function(key) {
-            try {
-                return JSON.parse(this.getItem(key));
-            } catch (e) {
-                return null;
+
+        // Load State from Local Storage
+        function loadStateFromLocalStorage() {
+            const savedState = localStorage.getObj('bible_rooms_state_v3');
+            if (savedState) {
+                state = savedState;
+            } else {
+                state = {
+                    myProfile: null,
+                    myRooms: [],
+                    currentRoomId: null,
+                    users: {},
+                    activeUserId: "",
+                    activeBookId: 1,
+                    categoryFilter: "전체",
+                    searchQuery: "",
+                    selectedModalColor: "emerald",
+                    dailyGoal: 3
+                };
+                saveStateToLocalStorage();
             }
         }
 
@@ -526,22 +672,14 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadStateFromLocalStorage();
             initFirebaseAndAuth();
-            renderUsersDropdown();
-            renderBibleBooksList();
-            renderChapterGrid();
-            renderOverallProgress();
-            renderTogetherProgressBoard();
+            checkAndTriggerProfileWelcome();
             getNewVerse();
             updateDailyGoal();
         });
 
-        // Initialize Firebase dynamically based on environment configuration safely
+        // Initialize Firebase dynamically
         async function initFirebaseAndAuth() {
             const hasConfig = typeof __firebase_config !== 'undefined' && __firebase_config;
-            
-            // 연동 카드는 이제 깃허브에서도 무조건 보여집니다!
-            document.getElementById('cloudSyncCard').classList.remove('hidden');
-
             if (hasConfig) {
                 try {
                     const firebaseConfig = JSON.parse(__firebase_config);
@@ -551,7 +689,6 @@
                     appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                     isFirebaseEnabled = true;
 
-                    // Rule 3: Authentication FIRST and await it
                     const initAuth = async () => {
                         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await signInWithCustomToken(auth, __initial_auth_token);
@@ -561,243 +698,426 @@
                     };
                     await initAuth();
 
-                    // Listen to auth states
                     onAuthStateChanged(auth, (user) => {
                         currentUser = user;
-                        if (user) {
-                            console.log("Firebase 클라우드 연동 완료:", user.uid);
-                            // Auto join saved room if present
-                            const savedRoomId = localStorage.getItem('bible_together_room_id');
-                            if (savedRoomId) {
-                                joinCloudRoom(savedRoomId);
-                            }
+                        if (user && state.currentRoomId) {
+                            joinRoomSync(state.currentRoomId);
                         }
                     });
-
                 } catch (e) {
-                    console.error("Firebase 로딩 실패, 폴백 무선 동기화 엔진으로 전환:", e);
-                    setupFallbackSync();
+                    console.error("Firebase 로딩 실패, 폴백 무선 엔진으로 자동 전환:", e);
                 }
+            }
+        }
+
+        // Check if Profile exists, if not, open Welcome Profile Setup modal
+        function checkAndTriggerProfileWelcome() {
+            if (!state.myProfile) {
+                selectWelcomeColor('emerald');
+                document.getElementById('welcomeModal').classList.remove('hidden');
             } else {
-                setupFallbackSync();
+                renderLobbyUI();
             }
         }
 
-        // 깃허브 등 독립 배포 환경을 위한 무선 폴백 엔진 가동
-        function setupFallbackSync() {
-            console.log("로컬 독립 모드 및 퍼블릭 무선 연동 엔진 작동 중.");
-            const savedRoomId = localStorage.getItem('bible_together_room_id');
-            if (savedRoomId) {
-                joinCloudRoom(savedRoomId);
+        // Submit First-visit profile setup
+        function submitWelcomeProfile() {
+            const nameInput = document.getElementById('welcomeUserName').value.trim();
+            if (!nameInput) {
+                alertModal("성경 읽기표에 표시될 이름을 작성해 주세요!");
+                return;
+            }
+
+            const uniqueId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            state.myProfile = {
+                id: uniqueId,
+                name: nameInput,
+                color: state.selectedModalColor
+            };
+            saveStateToLocalStorage();
+
+            document.getElementById('welcomeModal').classList.add('hidden');
+            renderLobbyUI();
+        }
+
+        // Render Lobby screen with User info & rooms list
+        function renderLobbyScreen() {
+            const profile = state.myProfile;
+            if (!profile) return;
+
+            // Render user widget
+            document.getElementById('lobbyUserName').innerText = profile.name;
+            const badge = document.getElementById('lobbyUserColor');
+            badge.innerText = profile.name.charAt(0);
+            badge.className = `w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner ${colorClasses[profile.color || 'emerald'].primary}`;
+
+            // Render joined rooms
+            const container = document.getElementById('roomsContainer');
+            container.innerHTML = '';
+
+            if (!state.myRooms || state.myRooms.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-stone-400 text-xs leading-relaxed">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 opacity-50"></i><br>
+                        아직 참여 중인 성경 읽기 모임이 없습니다.<br> 새로운 방을 만들거나 다른 분의 초대 코드를 넣어보세요!
+                    </div>
+                `;
+                return;
+            }
+
+            state.myRooms.forEach(room => {
+                const card = document.createElement('div');
+                card.className = "p-4 bg-stone-50 border border-stone-200/50 hover:border-emerald-700/30 rounded-2xl flex items-center justify-between transition-all group";
+                card.innerHTML = `
+                    <div class="truncate mr-3">
+                        <h4 class="font-bold text-sm text-stone-700 truncate">${room.name}</h4>
+                        <span class="text-[10px] font-semibold text-stone-400 flex items-center gap-1.5 mt-1">
+                            <i class="fa-solid fa-hashtag text-[9px]"></i> 코드: ${room.id}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="enterRoom('${room.id}')" class="bg-emerald-800 hover:bg-emerald-700 text-white font-black px-4 py-2 rounded-xl text-xs transition-all shadow-sm">
+                            입장하기
+                        </button>
+                        <button onclick="deleteRoomLocal('${room.id}')" class="bg-stone-100 hover:bg-stone-200 text-stone-400 hover:text-rose-600 w-8 h-8 rounded-xl text-xs transition-all" title="이 방 삭제">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(itemWrapper(card));
+            });
+        }
+
+        // Lobby / Read Screen transitions
+        function checkAndTriggerLobbyOrRead() {
+            if (state.currentRoomId) {
+                document.getElementById('lobbyScreen').classList.add('hidden');
+                document.getElementById('readScreen').classList.remove('hidden');
+                
+                // Show room info in header
+                const activeRoom = state.myRooms.find(r => r.id === state.currentRoomId) || { name: "알 수 없는 방", id: state.currentRoomId };
+                document.getElementById('activeRoomNameDisplay').innerText = activeRoom.name;
+                document.getElementById('activeRoomCodeBadge').innerText = activeRoom.id;
+
+                joinRoomSync(state.currentRoomId);
+            } else {
+                document.getElementById('lobbyScreen').classList.remove('hidden');
+                document.getElementById('readScreen').classList.add('hidden');
+                renderLobbyScreen();
             }
         }
 
-        // 깃허브 폴백 엔진 데이터 가져오기 (API 전송)
-        async function fetchFallbackData(roomId) {
-            try {
-                const res = await fetch(`https://kvdb.io/${FALLBACK_BUCKET}/room_${roomId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.users) {
-                        // 원격 데이터를 로컬 데이터로 병합 (타임스탬프가 최신인 경우에만 덮어씀)
-                        Object.keys(data.users).forEach(uid => {
-                            const localUser = state.users[uid];
-                            const remoteUser = data.users[uid];
-                            if (!localUser || !localUser.updatedAt || (remoteUser.updatedAt > (localUser.updatedAt || 0))) {
-                                state.users[uid] = remoteUser;
-                            }
-                        });
-                        saveStateToLocalStorage();
-                        
-                        // 렌더링 업데이트
-                        renderUsersDropdown();
-                        renderBibleBooksList();
-                        renderChapterGrid();
-                        renderOverallProgress();
-                        renderTogetherProgressBoard();
-                    }
-                }
-            } catch (e) {
-                console.error("폴백 수신 에러:", e);
-            }
+        function renderLobbyUI() {
+            state.currentRoomId = null;
+            saveStateToLocalStorage();
+            checkAndTriggerLobbyOrRead();
         }
 
-        // 깃허브 폴백 엔진 데이터 저장하기
-        async function saveFallbackData(roomId) {
-            try {
-                const payload = { users: state.users };
-                await fetch(`https://kvdb.io/${FALLBACK_BUCKET}/room_${roomId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-            } catch (e) {
-                console.error("폴백 전송 에러:", e);
-            }
-        }
+        // Room Sync Engine (Handles real-time cloud data polling & sync)
+        async function joinRoomSync(roomId) {
+            if (roomUnsubscribe) roomUnsubscribe();
+            if (fallbackPollInterval) clearInterval(fallbackPollInterval);
 
-        // Join a real-time Room safely
-        function joinCloudRoom(roomId) {
-            currentRoomId = roomId;
-            localStorage.setItem('bible_together_room_id', roomId);
+            // Ensure the user itself exists inside room.users
+            if (!state.users[state.myProfile.id]) {
+                state.users[state.myProfile.id] = {
+                    name: state.myProfile.name,
+                    color: state.myProfile.color,
+                    progress: {}
+                };
+            }
 
             if (isFirebaseEnabled && currentUser) {
-                // --- Firebase 실시간 감지 모드 (Canvas 전용) ---
-                if (roomUnsubscribe) roomUnsubscribe();
+                // --- Firebase Firestore real-time ---
                 const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId);
 
                 roomUnsubscribe = onSnapshot(roomDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        if (data && data.users) {
-                            Object.keys(data.users).forEach(uid => {
-                                state.users[uid] = data.users[uid];
-                            });
-                            saveStateToLocalStorage();
-                            
-                            renderUsersDropdown();
-                            renderBibleBooksList();
-                            renderChapterGrid();
-                            renderOverallProgress();
-                            renderTogetherProgressBoard();
+                        if (data) {
+                            if (data.roomName) {
+                                updateRoomNameInState(roomId, data.roomName);
+                            }
+                            if (data.users) {
+                                state.users = data.users;
+                                saveStateToLocalStorage();
+                                renderActiveRoomLayouts();
+                            }
                         }
                     } else {
-                        setDoc(roomDocRef, { users: state.users });
+                        // Init new Room document on firebase
+                        const roomName = (state.myRooms.find(r => r.id === roomId) || {}).name || "새 성경방";
+                        setDoc(roomDocRef, { roomName: roomName, users: state.users });
                     }
-
-                    // UI 연동상태 업데이트
-                    updateUIForConnected(roomId);
                 }, (error) => {
-                    console.error("실시간 수신 에러:", error);
+                    console.error("Firestore sync error:", error);
                 });
             } else {
-                // --- 무선 폴백 엔진 모드 (GitHub Pages 전용) ---
-                if (fallbackPollInterval) clearInterval(fallbackPollInterval);
-                
-                // 최초 즉시 동기화
-                fetchFallbackData(roomId);
-                
-                // 4초 주기 폴링 시작
-                fallbackPollInterval = setInterval(() => {
-                    fetchFallbackData(roomId);
-                }, 4000);
+                // --- Public Fallback HTTP Sync ---
+                const syncCall = async () => {
+                    try {
+                        const encodedRoomId = encodeURIComponent(roomId);
+                        const res = await fetch(`https://kvdb.io/${FALLBACK_BUCKET}/room_${encodedRoomId}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data) {
+                                if (data.roomName) {
+                                    updateRoomNameInState(roomId, data.roomName);
+                                }
+                                if (data.users) {
+                                    // Merge cloud data with my local data safely (timestamp match)
+                                    Object.keys(data.users).forEach(uid => {
+                                        const localU = state.users[uid];
+                                        const remoteU = data.users[uid];
+                                        const localTime = (localU && localU.updatedAt) ? localU.updatedAt : 0;
+                                        const remoteTime = (remoteU && remoteU.updatedAt) ? remoteU.updatedAt : 0;
 
-                updateUIForConnected(roomId);
+                                        if (!localU || remoteTime > localTime) {
+                                            state.users[uid] = remoteU;
+                                        }
+                                    });
+                                    saveStateToLocalStorage();
+                                    renderActiveRoomLayouts();
+                                }
+                            }
+                        } else if (res.status === 404) {
+                            // Document does not exist yet. Initialize it!
+                            const roomName = (state.myRooms.find(r => r.id === roomId) || {}).name || "새 성경방";
+                            const payload = { roomName: roomName, users: state.users };
+                            await fetch(`https://kvdb.io/${FALLBACK_BUCKET}/room_${encodedRoomId}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Fallback Sync Fetch error:", e);
+                    }
+                };
+
+                // Trigger once immediately
+                await syncCall();
+                
+                // Poll every 4 seconds
+                fallbackPollInterval = setInterval(syncCall, 4000);
             }
         }
 
-        // 연동 연결 성공 시 UI 처리
-        function updateUIForConnected(roomId) {
-            document.getElementById('cloudStatusIcon').className = "fa-solid fa-cloud text-emerald-600 animate-pulse";
-            document.getElementById('cloudStatusBadge').className = "text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold";
-            document.getElementById('cloudStatusBadge').innerText = isFirebaseEnabled ? "연동됨" : "무선 연동됨";
-            document.getElementById('cloudStatusDesc').classList.add('hidden');
-            document.getElementById('cloudActionForm').classList.add('hidden');
-            document.getElementById('cloudActiveForm').classList.remove('hidden');
-            document.getElementById('activeRoomNameDisplay').innerText = roomId;
-        }
-
-        // Connect room triggers from UI
-        async function connectCloudRoom() {
-            const inputVal = document.getElementById('cloudRoomInput').value.trim();
-            if (!inputVal) {
-                alertModal("입력된 방 이름이 없습니다. 방 이름을 입력해 주세요!");
-                return;
+        // Update room name in our local state if we discovered it from server
+        function updateRoomNameInState(roomId, cloudName) {
+            const localRoom = state.myRooms.find(r => r.id === roomId);
+            if (localRoom && localRoom.name !== cloudName) {
+                localRoom.name = cloudName;
+                saveStateToLocalStorage();
+                document.getElementById('activeRoomNameDisplay').innerText = cloudName;
             }
-            joinCloudRoom(inputVal);
-            await syncStateToCloud();
         }
 
-        // Disconnect from real-time sync
-        function leaveCloudRoom() {
-            if (roomUnsubscribe) roomUnsubscribe();
-            if (fallbackPollInterval) clearInterval(fallbackPollInterval);
-            currentRoomId = null;
-            localStorage.removeItem('bible_together_room_id');
-
-            // Reset UI states
-            document.getElementById('cloudStatusIcon').className = "fa-solid fa-cloud-arrow-up text-stone-400";
-            document.getElementById('cloudStatusBadge').className = "text-[10px] bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full font-semibold";
-            document.getElementById('cloudStatusBadge').innerText = "연동 전";
-            document.getElementById('cloudStatusDesc').classList.remove('hidden');
-            document.getElementById('cloudActionForm').classList.remove('hidden');
-            document.getElementById('cloudActiveForm').classList.add('hidden');
-            document.getElementById('cloudRoomInput').value = '';
-            
-            alertModal("실시간 연동이 해제되었습니다. 이제 오프라인으로 기록됩니다.");
-        }
-
-        // Push current active user status to database safely
+        // Push reading checklist change to cloud database immediately
         async function syncStateToCloud() {
-            if (!currentRoomId) return;
-            
-            const myUserObj = state.users[state.activeUserId];
+            if (!state.currentRoomId) return;
+
+            const myUserObj = state.users[state.myProfile.id];
             if (!myUserObj) return;
 
-            // 업데이트 타임스탬프 설정
             myUserObj.updatedAt = Date.now();
             saveStateToLocalStorage();
 
             if (isFirebaseEnabled && currentUser) {
-                // --- Firebase Firestore 업로드 ---
-                const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', currentRoomId);
+                const roomDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'rooms', state.currentRoomId);
                 try {
                     await updateDoc(roomDocRef, {
-                        [`users.${state.activeUserId}`]: {
-                            name: myUserObj.name,
-                            color: myUserObj.color,
-                            progress: myUserObj.progress,
-                            updatedAt: myUserObj.updatedAt
-                        }
+                        [`users.${state.myProfile.id}`]: myUserObj
                     });
-                } catch (err) {
-                    try {
-                        await setDoc(roomDocRef, {
-                            users: {
-                                [state.activeUserId]: {
-                                    name: myUserObj.name,
-                                    color: myUserObj.color,
-                                    progress: myUserObj.progress,
-                                    updatedAt: myUserObj.updatedAt
-                                }
-                            }
-                        }, { merge: true });
-                    } catch (e) {
-                        console.error("클라우드 업로드 에러:", e);
-                    }
+                } catch (e) {
+                    // Try setting standard document
+                    const roomName = (state.myRooms.find(r => r.id === state.currentRoomId) || {}).name || "새 성경방";
+                    await setDoc(roomDocRef, { roomName: roomName, users: state.users }, { merge: true });
                 }
             } else {
-                // --- 폴백 엔진 업로드 ---
-                await saveFallbackData(currentRoomId);
+                try {
+                    const encodedRoomId = encodeURIComponent(state.currentRoomId);
+                    const roomName = (state.myRooms.find(r => r.id === state.currentRoomId) || {}).name || "새 성경방";
+                    const payload = { roomName: roomName, users: state.users };
+                    await fetch(`https://kvdb.io/${FALLBACK_BUCKET}/room_${encodedRoomId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (e) {
+                    console.error("Cloud push failed:", e);
+                }
             }
         }
 
-        // Load & Save to LocalStorage
-        function loadStateFromLocalStorage() {
-            const savedState = localStorage.getObj('bible_together_state');
-            if (savedState) {
-                state = savedState;
+        // Render Active Room Inside Layouts
+        function renderActiveRoomLayouts() {
+            // Update Active User mapping inside active room
+            if (!state.activeUserId || !state.users[state.activeUserId]) {
+                state.activeUserId = state.myProfile.id;
             }
+
+            renderUsersDropdown();
+            renderBibleBooksList();
+            renderChapterGrid();
+            renderOverallProgress();
+            renderTogetherProgressBoard();
         }
 
-        function saveStateToLocalStorage() {
-            localStorage.setObj('bible_together_state', state);
+        // Exit active room to Lobby
+        function exitToLobby() {
+            if (roomUnsubscribe) roomUnsubscribe();
+            if (fallbackPollInterval) clearInterval(fallbackPollInterval);
+
+            state.currentRoomId = null;
+            state.users = {};
+            state.activeUserId = "";
+            saveStateToLocalStorage();
+
+            checkAndTriggerLobbyOrRead();
         }
 
-        // Toggle User Selector Dropdown
-        function toggleUserDropdown() {
-            const menu = document.getElementById('userDropdownMenu');
-            menu.classList.toggle('hidden');
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            const btn = document.getElementById('userDropdownBtn');
-            const menu = document.getElementById('userDropdownMenu');
-            if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
-                menu.classList.add('hidden');
+        // Delete Room locally from Lobby list
+        window.deleteRoomLocal = function(roomId) {
+            if (confirm("이 성경 읽기방 모임을 나의 대기실 방 목록에서 완전히 삭제하시겠습니까? (이 기기에서 목록만 삭제되며, 클라우드 서버의 데이터가 삭제되지는 않습니다)")) {
+                state.myRooms = state.myRooms.filter(r => r.id !== roomId);
+                saveStateToLocalStorage();
+                renderLobbyScreen();
             }
-        });
+        };
+
+        // Create Room logic triggers
+        window.openCreateRoomModal = function() {
+            document.getElementById('newRoomNameInput').value = '';
+            document.getElementById('createRoomModal').classList.remove('hidden');
+        };
+
+        window.closeCreateRoomModal = function() {
+            document.getElementById('createRoomModal').classList.add('hidden');
+        };
+
+        window.submitCreateRoom = async function() {
+            const nameInput = document.getElementById('newRoomNameInput').value.trim();
+            if (!nameInput) {
+                alertModal("성경 방의 이름을 정해 주세요!");
+                return;
+            }
+
+            // Generate beautifully readable 6 digit code: BIBLE-xxxx
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Readable letters & numbers
+            let randomCode = '';
+            for (let i = 0; i < 4; i++) {
+                randomCode += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const uniqueRoomCode = 'B-' + randomCode;
+
+            // Save to myRooms
+            state.myRooms.push({ id: uniqueRoomCode, name: nameInput });
+            state.currentRoomId = uniqueRoomCode;
+            state.users = {
+                [state.myProfile.id]: {
+                    name: state.myProfile.name,
+                    color: state.myProfile.color,
+                    progress: {},
+                    updatedAt: Date.now()
+                }
+            };
+            saveStateToLocalStorage();
+
+            closeCreateRoomModal();
+            checkAndTriggerLobbyOrRead();
+
+            // Force push new Room configuration to the cloud right away!
+            await syncStateToCloud();
+        };
+
+        // Join Room logic triggers
+        window.openJoinRoomModal = function() {
+            document.getElementById('joinRoomCodeInput').value = '';
+            document.getElementById('joinRoomModal').classList.remove('hidden');
+        };
+
+        window.closeJoinRoomModal = function() {
+            document.getElementById('joinRoomModal').classList.add('hidden');
+        };
+
+        window.submitJoinRoom = async function() {
+            const codeInput = document.getElementById('joinRoomCodeInput').value.trim().toUpperCase();
+            if (!codeInput) {
+                alertModal("전달받으신 성경방의 6자리 초대 코드를 입력해 주세요!");
+                return;
+            }
+
+            // Verify if Room exists on Cloud before joining
+            try {
+                const encodedRoomId = encodeURIComponent(codeInput);
+                let roomNameCloud = "참가한 성경방";
+
+                if (isFirebaseEnabled) {
+                    const docSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'rooms', codeInput));
+                    if (docSnap.exists() && docSnap.data().roomName) {
+                        roomNameCloud = docSnap.data().roomName;
+                    } else {
+                        alertModal("죄송합니다. 존재하지 않는 초대 코드입니다. 다시 한 번 확인해 주세요!");
+                        return;
+                    }
+                } else {
+                    const res = await fetch(`https://kvdb.io/${FALLBACK_BUCKET}/room_${encodedRoomId}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.roomName) {
+                            roomNameCloud = data.roomName;
+                        }
+                    } else {
+                        alertModal("죄송합니다. 입력하신 코드의 방을 찾을 수 없습니다. 다시 한 번 확인해 주세요!");
+                        return;
+                    }
+                }
+
+                // If already inside list, do not duplicate
+                if (!state.myRooms.some(r => r.id === codeInput)) {
+                    state.myRooms.push({ id: codeInput, name: roomNameCloud });
+                }
+
+                state.currentRoomId = codeInput;
+                state.users = {}; // Will pull completely from snap
+                saveStateToLocalStorage();
+
+                closeJoinRoomModal();
+                checkAndTriggerLobbyOrRead();
+                alertModal(`성공적으로 [${roomNameCloud}] 모임방에 참가하셨습니다!`);
+
+            } catch (err) {
+                console.error("Join room failed:", err);
+                alertModal("연결에 실패했습니다. 인터넷 상태를 확인해 주세요!");
+            }
+        };
+
+        // Enter a Room that is already in Lobby list
+        window.enterRoom = function(roomId) {
+            state.currentRoomId = roomId;
+            state.users = {}; // Reset container before sync stream
+            saveStateToLocalStorage();
+            checkAndTriggerLobbyOrRead();
+        };
+
+        // Copy Room Code trigger inside Header
+        window.copyActiveRoomCode = function() {
+            const txt = document.createElement('textarea');
+            txt.value = state.currentRoomId;
+            document.body.appendChild(txt);
+            txt.select();
+            try {
+                document.execCommand('copy');
+                alertModal(`초대 코드 [ ${state.currentRoomId} ] 가 클립보드에 복사되었습니다! 카카오톡으로 가족과 친구들에게 공유해 보세요.`);
+            } catch (err) {
+                alertModal(`방 초대 코드는 [ ${state.currentRoomId} ] 입니다.`);
+            }
+            document.body.removeChild(txt);
+        };
+
+
+        // --- MAIN BIBLE CORE LOGICS ---
 
         // Render Dropdown List of Users
         function renderUsersDropdown() {
@@ -839,7 +1159,7 @@
             }
         }
 
-        // Profile Add Modal Actions
+        // Profile Add Modal Actions inside active Room
         function openAddUserModal() {
             document.getElementById('newUserName').value = '';
             selectColorBadge('emerald');
@@ -851,17 +1171,19 @@
             document.getElementById('addUserModal').classList.add('hidden');
         }
 
-        // Select profile color scheme
+        // Select color badge (Create/Join/Edit Modals)
         function selectColorBadge(color) {
             state.selectedModalColor = color;
             document.querySelectorAll('.color-badge').forEach(badge => {
                 badge.classList.remove('border-stone-800', 'ring-2');
                 badge.classList.add('border-transparent');
+                if (badge.getAttribute('onclick') && badge.getAttribute('onclick').includes(`'${color}'`)) {
+                    badge.classList.add('border-stone-800', 'ring-2');
+                }
             });
-            event.target.classList.add('border-stone-800', 'ring-2');
         }
 
-        // Handle adding a new reader/user profile
+        // Add manually a custom secondary member inside the active Room
         function submitNewUser() {
             const nameInput = document.getElementById('newUserName').value.trim();
             if (!nameInput) {
@@ -873,7 +1195,8 @@
             state.users[newUid] = {
                 name: nameInput,
                 color: state.selectedModalColor,
-                progress: {}
+                progress: {},
+                updatedAt: Date.now()
             };
 
             state.activeUserId = newUid;
@@ -895,7 +1218,6 @@
             const currentUserObj = state.users[state.activeUserId];
             if (!currentUserObj) return;
 
-            // Filter books based on active tab and search query
             const filteredBooks = bibleBooks.filter(book => {
                 const matchesCategory = state.categoryFilter === "전체" || book.category === state.categoryFilter;
                 const matchesSearch = book.name.toLowerCase().includes(state.searchQuery.toLowerCase()) || 
@@ -934,7 +1256,6 @@
                     </div>
                     <div class="text-right flex flex-col items-end gap-1">
                         <span class="text-xs font-bold text-stone-600">${readCount}/${book.chapters}장</span>
-                        <!-- Tiny Progress Bar -->
                         <div class="w-16 h-1 bg-stone-100 rounded-full overflow-hidden">
                             <div class="h-full ${colorClasses[currentUserObj.color || 'emerald'].primary}" style="width: ${percent}%"></div>
                         </div>
@@ -954,7 +1275,6 @@
         function filterBibleCategory(category) {
             state.categoryFilter = category;
             
-            // Adjust Active Class on Tabs
             document.querySelectorAll('.category-tab').forEach(tab => {
                 tab.classList.remove('bg-white', 'text-stone-800', 'shadow-sm');
                 tab.classList.add('text-stone-500');
@@ -985,7 +1305,6 @@
             const currentUserObj = state.users[state.activeUserId];
             if (!currentUserObj) return;
 
-            // Set headers
             document.getElementById('activeBookName').innerText = book.name;
             document.getElementById('activeBookEnglish').innerText = book.eng;
             
@@ -995,7 +1314,6 @@
             const container = document.getElementById('chapterMatrixContainer');
             container.innerHTML = '';
 
-            // Grid Container creation
             const grid = document.createElement('div');
             grid.className = "grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2 pb-6";
 
@@ -1003,7 +1321,6 @@
                 const isChecked = userProgress.includes(ch);
                 const btn = document.createElement('button');
                 
-                // Color configuration depending on profile theme
                 const userTheme = colorClasses[currentUserObj.color || 'emerald'];
                 
                 let btnStyle = isChecked
@@ -1022,7 +1339,6 @@
 
             container.appendChild(grid);
             
-            // Sync current book chapters limit with range helper maximum
             document.getElementById('bulkRangeValue').max = book.chapters;
             if (parseInt(document.getElementById('bulkRangeValue').value) > book.chapters) {
                 document.getElementById('bulkRangeValue').value = book.chapters;
@@ -1134,13 +1450,11 @@
 
             const percentage = Math.round((stats.total / overallTotal) * 100);
 
-            // Update Statistics texts
             document.getElementById('totalCheckedChapters').innerText = stats.total.toLocaleString();
             document.getElementById('otProgressText').innerText = `${stats.otTotal} / 929`;
             document.getElementById('ntProgressText').innerText = `${stats.ntTotal} / 260`;
             document.getElementById('progressPercentage').innerText = `${percentage}%`;
 
-            // Update Progress Ring SVG
             const circle = document.getElementById('progressRing');
             const radius = circle.r.baseVal.value;
             const circumference = 2 * Math.PI * radius;
@@ -1151,7 +1465,6 @@
                                currentUserObj.color === 'amber' ? '#f59e0b' :
                                currentUserObj.color === 'rose' ? '#f43f5e' : '#6366f1';
 
-            // Estimated Completed date calculations
             calculateCompletionDate(stats.total);
         }
 
@@ -1163,6 +1476,7 @@
             const uids = Object.keys(state.users);
             uids.forEach(uid => {
                 const user = state.users[uid];
+
                 const stats = getUserTotalCount(user);
                 const percent = Math.round((stats.total / 1189) * 100);
                 const userTheme = colorClasses[user.color || 'emerald'];
@@ -1211,7 +1525,6 @@
             
             document.getElementById('remainingDaysDisplay').innerText = `약 ${daysRemaining}일 남음`;
 
-            // Calculate expected completed date
             if (totalRemaining <= 0) {
                 document.getElementById('bibleCompleteDateEstimation').innerText = "🎉 성경 완독 완료!";
                 return;
@@ -1236,7 +1549,7 @@
             document.getElementById('motivationalVerse').innerText = versesList[nextIndex];
         }
 
-        // Data sharing modal & export encoding
+        // Data sharing modal & export encoding (Offline backup/restore)
         function openShareModal() {
             const rawJson = JSON.stringify(state);
             const base64Code = btoa(encodeURIComponent(rawJson));
@@ -1250,21 +1563,17 @@
             document.getElementById('shareModal').classList.add('hidden');
         }
 
-        // Use clipboard copy with compatibility fallback for iframe environments
         function copyShareCode() {
             const txt = document.getElementById('shareCodeTextarea');
             txt.select();
             txt.setSelectionRange(0, 99999);
-            
             try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    const msg = document.getElementById('copySuccessMsg');
-                    msg.classList.remove('hidden');
-                    setTimeout(() => {
-                        msg.classList.add('hidden');
-                    }, 3000);
-                }
+                document.execCommand('copy');
+                const msg = document.getElementById('copySuccessMsg');
+                msg.classList.remove('hidden');
+                setTimeout(() => {
+                    msg.classList.add('hidden');
+                }, 3000);
             } catch (err) {
                 alertModal("복사에 실패했습니다. 공유 코드 텍스트 영역을 직접 꾹 누르고 복사해 주세요.");
             }
@@ -1281,17 +1590,14 @@
                 const decodedJson = decodeURIComponent(atob(rawInput));
                 const parsedState = JSON.parse(decodedJson);
 
-                if (parsedState && parsedState.users && typeof parsedState.users === 'object') {
-                    if (confirmModal("읽기 진도 데이터를 가져오시겠습니까? 현재 기기에 저장된 기존 데이터는 완전히 대체됩니다.")) {
+                if (parsedState && parsedState.myProfile) {
+                    if (confirmModal("읽기 진도 데이터를 복원하시겠습니까? 현재 기기에 저장된 기존 데이터는 완전히 대체됩니다.")) {
                         state = parsedState;
                         saveStateToLocalStorage();
                         closeShareModal();
                         
-                        renderUsersDropdown();
-                        renderBibleBooksList();
-                        renderChapterGrid();
-                        renderOverallProgress();
-                        renderTogetherProgressBoard();
+                        renderLobbyScreen();
+                        checkAndTriggerLobbyOrRead();
                         alertModal("성공적으로 데이터를 불러왔습니다!");
                     }
                 } else {
@@ -1302,7 +1608,84 @@
             }
         }
 
-        // CUSTOM MODALS TO REPLACE BROWSER DEFAULT DIALOGS
+
+        // --- MODAL & MISC UI CONTROLS ---
+
+        // Edit Profile modal trigger inside Lobby / Room Header
+        function openEditUserModal() {
+            const profile = state.myProfile;
+            if (!profile) return;
+
+            document.getElementById('editUserName').value = profile.name;
+            selectEditColorBadge(profile.color || 'emerald');
+            document.getElementById('editUserModal').classList.remove('hidden');
+            toggleUserDropdown(); // Close menu if open
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.add('hidden');
+        }
+
+        function selectEditColorBadge(color) {
+            state.selectedModalColor = color;
+            document.querySelectorAll('.edit-color-badge').forEach(badge => {
+                badge.classList.remove('border-stone-800', 'ring-2');
+                badge.classList.add('border-transparent');
+                if (badge.getAttribute('onclick') && badge.getAttribute('onclick').includes(`'${color}'`)) {
+                    badge.classList.add('border-stone-800', 'ring-2');
+                }
+            });
+        }
+
+        async function submitEditUser() {
+            const nameInput = document.getElementById('editUserName').value.trim();
+            if (!nameInput) {
+                alertModal("이름을 입력해 주세요.");
+                return;
+            }
+
+            state.myProfile.name = nameInput;
+            state.myProfile.color = state.selectedModalColor;
+            
+            // Sync current active user representation in room
+            if (state.currentRoomId && state.users[state.myProfile.id]) {
+                state.users[state.myProfile.id].name = nameInput;
+                state.users[state.myProfile.id].color = state.selectedModalColor;
+            }
+
+            saveStateToLocalStorage();
+            closeEditUserModal();
+            
+            if (state.currentRoomId) {
+                renderActiveRoomLayouts();
+                await syncStateToCloud();
+            } else {
+                renderLobbyScreen();
+            }
+        }
+
+        // Custom Welcome Actions mapping
+        window.selectWelcomeColor = selectWelcomeColor;
+        window.submitWelcomeProfile = submitWelcomeProfile;
+        
+        // Custom Edit Actions mapping
+        window.openEditUserModal = openEditUserModal;
+        window.closeEditUserModal = closeEditUserModal;
+        window.selectEditColorBadge = selectEditColorBadge;
+        window.submitEditUser = submitEditUser;
+
+        // Welcome / Profile creation selection
+        function selectWelcomeColor(color) {
+            state.selectedModalColor = color;
+            document.querySelectorAll('.w-color-badge').forEach(badge => {
+                badge.classList.remove('border-stone-800', 'ring-2');
+                badge.classList.add('border-transparent');
+                if (badge.getAttribute('onclick') && badge.getAttribute('onclick').includes(`'${color}'`)) {
+                    badge.classList.add('border-stone-800', 'ring-2');
+                }
+            });
+        }
+
         function alertModal(message) {
             const div = document.createElement('div');
             div.className = "fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center z-[100] p-4";
@@ -1320,6 +1703,13 @@
 
         function confirmModal(message) {
             return confirm(message);
+        }
+
+        // Helper element wrapper safely bypassing innerHTML bindings on older browsers
+        function itemWrapper(domEl) {
+            const wrapper = document.createElement('div');
+            wrapper.appendChild(domEl);
+            return wrapper.firstElementChild;
         }
 
         // Global Variable Mapping for compatibility with legacy HTML inline onclick events (Canvas requirement)
@@ -1341,10 +1731,7 @@
         window.copyShareCode = copyShareCode;
         window.importShareCode = importShareCode;
         window.switchActiveUser = switchActiveUser;
-        
-        // Cloud handlers
-        window.connectCloudRoom = connectCloudRoom;
-        window.leaveCloudRoom = leaveCloudRoom;
+        window.exitToLobby = exitToLobby;
     </script>
 </body>
 </html>
