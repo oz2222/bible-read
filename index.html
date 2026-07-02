@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>우리 함께 성경 읽기표</title>
     
-    <!-- iOS Web App Meta Tags -->
+    <!-- iOS Web App Meta Tags (진짜 어플처럼 전체화면으로 실행되게 만드는 마법의 태그) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="성경읽기표">
@@ -13,11 +13,11 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
+    <link class="file-accessible" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for elegant Korean text -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     
-    <!-- Firebase Compat SDK -->
+    <!-- 100% 무결점 작동을 위해 안전한 Firebase Compat 버전 사용 (스크립트가 절대로 마비되지 않는 장치) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -25,12 +25,13 @@
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f7f5f0;
+            background-color: #f7f5f0; /* Soft warm ivory paper background */
             -webkit-tap-highlight-color: transparent;
         }
         .serif-title {
             font-family: 'Playfair Display', 'Noto Sans KR', serif;
         }
+        /* Custom Scrollbar for elegant look */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -48,6 +49,7 @@
         .chapter-btn {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        /* iOS Safe Area spacing for standalone mode */
         @supports (padding-top: env(safe-area-inset-top)) {
             header {
                 padding-top: calc(env(safe-area-inset-top) + 0.5rem);
@@ -74,7 +76,9 @@
             <!-- Profile Info Widget -->
             <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/60 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div id="lobbyUserColor" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner"></div>
+                    <div id="lobbyUserColor" class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-inner">
+                        <!-- Initial or Emoji -->
+                    </div>
                     <div>
                         <span class="text-[10px] text-stone-400 block font-bold flex items-center gap-1">
                             <span>접속 프로필</span>
@@ -106,7 +110,9 @@
                     <i class="fa-solid fa-users text-emerald-700"></i> 나의 성경 읽기방 목록
                 </h2>
 
-                <div id="roomsContainer" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
+                <div id="roomsContainer" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+                    <!-- Dynamic Joined Rooms Lists -->
+                </div>
 
                 <!-- Create & Join Buttons -->
                 <div class="grid grid-cols-2 gap-3 pt-2">
@@ -126,7 +132,7 @@
     </div>
 
 
-    <!-- MAIN READ SCREEN -->
+    <!-- MAIN READ SCREEN (방 입장 후 보게 되는 진짜 읽기표 화면, 처음에는 hidden) -->
     <div id="readScreen" class="hidden flex-grow flex flex-col">
         <!-- Top Navigation Header -->
         <header class="bg-emerald-900 text-stone-100 shadow-md sticky top-0 z-40 transition-all">
@@ -155,8 +161,11 @@
                         </button>
                         <!-- Dropdown Menu -->
                         <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-stone-100 z-50 animate-fade-in-down origin-top-right">
-                            <div class="py-1" id="userListContainer"></div>
+                            <div class="py-1" id="userListContainer">
+                                <!-- Dynamic User Profiles go here -->
+                            </div>
                             <div class="py-1.5 px-3 space-y-1">
+                                <!-- 방 내부에서도 마이페이지에 바로 들어갈 수 있도록 구성 📊 -->
                                 <button onclick="openMyPageModal()" class="w-full text-left px-2 py-1.5 text-xs text-indigo-700 font-bold hover:bg-indigo-50 rounded-lg flex items-center gap-1.5">
                                     <i class="fa-solid fa-chart-pie"></i> 전체 마이페이지
                                 </button>
@@ -165,7 +174,7 @@
                                 </button>
                                 <button onclick="openAddUserModal()" class="w-full text-left px-2 py-1.5 text-xs text-emerald-700 font-medium hover:bg-emerald-50 rounded-lg flex items-center gap-1.5">
                                     <i class="fa-solid fa-plus-circle"></i> 함께 읽을 사람 추가
-                                </button>
+                            </button>
                             </div>
                         </div>
                     </div>
@@ -175,8 +184,10 @@
 
         <!-- Main Content Grid -->
         <main class="flex-grow max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
             <!-- Left Panel -->
             <section class="lg:col-span-4 space-y-6">
+
                 <!-- Profile Card -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80 relative overflow-hidden">
                     <div class="absolute -right-4 -bottom-4 text-stone-100 pointer-events-none opacity-40">
@@ -195,7 +206,9 @@
                     <div class="flex items-center gap-5 my-4">
                         <div class="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
                             <svg class="w-full h-full transform -rotate-90">
+                                <!-- Track -->
                                 <circle cx="48" cy="48" r="40" stroke="#f1ede4" stroke-width="8" fill="transparent" />
+                                <!-- Progress Bar -->
                                 <circle id="progressRing" cx="48" cy="48" r="40" stroke="#10b981" stroke-width="8" fill="transparent" 
                                         stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" class="transition-all duration-500" />
                             </svg>
@@ -223,7 +236,7 @@
                         </div>
                     </div>
 
-                    <!-- Settings -->
+                    <!-- Settings: Target Daily Reading -->
                     <div class="bg-stone-50 rounded-xl p-3 border border-stone-100 text-xs text-stone-600 space-y-2.5">
                         <div class="flex justify-between items-center">
                             <span class="font-medium">하루 목표 읽기 분량:</span>
@@ -239,16 +252,18 @@
                     </div>
                 </div>
 
-                <!-- Together Board -->
+                <!-- Together Board (Dynamic Comparison with others) -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80">
                     <h3 class="font-bold text-stone-800 text-sm tracking-wide uppercase mb-3.5 flex items-center justify-between">
                         <span><i class="fa-solid fa-users-rectangle text-emerald-600 mr-1.5"></i>멤버별 읽기 현황판</span>
                         <span class="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full font-medium animate-pulse">실시간 연동중</span>
                     </h3>
-                    <div class="space-y-4" id="compareUsersContainer"></div>
+                    <div class="space-y-4" id="compareUsersContainer">
+                        <!-- Dynamic progression bars for all users -->
+                    </div>
                 </div>
 
-                <!-- Helpful Bible Quotes -->
+                <!-- Helpful Bible Quotes / Motivation widget -->
                 <div class="bg-amber-50/70 border border-amber-200/50 rounded-2xl p-4 text-stone-700 text-xs relative">
                     <i class="fa-solid fa-quote-left absolute top-3 left-3 text-amber-200 text-2xl"></i>
                     <div class="pl-6 relative z-10">
@@ -258,12 +273,15 @@
                         </button>
                     </div>
                 </div>
+
             </section>
 
-            <!-- Right Panel -->
+            <!-- Right Panel: Bible Books Checklist & Selection -->
             <section class="lg:col-span-8 space-y-6">
+
                 <!-- Category & Search Tabs -->
                 <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-stone-200/80 flex flex-wrap items-center justify-between gap-3">
+                    <!-- Tabs -->
                     <div class="flex bg-stone-100 p-1 rounded-xl gap-1">
                         <button onclick="filterBibleCategory('전체')" id="tabBtn_전체" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all bg-white text-stone-800 shadow-sm">
                             전체 (66권)
@@ -275,23 +293,31 @@
                             신약 (27권)
                         </button>
                     </div>
+
                     <div class="relative w-full sm:w-auto">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-stone-400 text-xs"></i>
                         <input type="text" id="searchInput" oninput="searchBibleBook()" placeholder="성경 책 이름 검색... (예: 창세)" class="w-full sm:w-48 pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600">
                     </div>
                 </div>
 
-                <!-- Double-Column View -->
+                <!-- Double-Column View (Left: Bible Books List, Right: Interactive Chapter Checker) -->
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[500px]">
+
+                    <!-- Bible Books Selector (List) -->
                     <div class="md:col-span-5 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-3 flex flex-col max-h-[550px]">
                         <span class="text-xs text-stone-400 font-bold px-2 py-1 flex items-center gap-1 border-b border-stone-100 pb-2">
                             <i class="fa-solid fa-scroll"></i> 성경 목록 선택
                         </span>
-                        <div class="overflow-y-auto flex-grow divide-y divide-stone-100/60 pr-1 mt-2" id="bibleBookList"></div>
+                        <div class="overflow-y-auto flex-grow divide-y divide-stone-100/60 pr-1 mt-2" id="bibleBookList">
+                            <!-- Bible Book Buttons will load dynamically -->
+                        </div>
                     </div>
 
+                    <!-- Interactive Chapter Board -->
                     <div class="md:col-span-7 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-4 md:p-5 flex flex-col justify-between max-h-[550px]">
+                        
                         <div class="flex-grow flex flex-col overflow-hidden">
+                            <!-- Active Book Title Header -->
                             <div class="border-b border-stone-100 pb-3 mb-4 flex flex-wrap items-center justify-between gap-2">
                                 <div>
                                     <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2">
@@ -300,6 +326,8 @@
                                     </h3>
                                     <p class="text-xs text-stone-400 font-medium mt-0.5" id="activeBookProgressText">읽은 진도: 0 / 50장</p>
                                 </div>
+
+                                <!-- Fast-Action Bulk Controls -->
                                 <div class="flex gap-1">
                                     <button onclick="bulkCheckActiveBook(true)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded text-[11px] font-bold transition-all">
                                         <i class="fa-solid fa-check-double mr-0.5"></i> 전체 선택
@@ -309,9 +337,14 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="overflow-y-auto flex-grow pr-1" id="chapterMatrixContainer"></div>
+
+                            <!-- Main Chapter Buttons Matrix Grid -->
+                            <div class="overflow-y-auto flex-grow pr-1" id="chapterMatrixContainer">
+                                <!-- Chapter Grid Buttons will load here dynamically -->
+                            </div>
                         </div>
 
+                        <!-- Custom Range/Bulk check helper footer -->
                         <div class="bg-stone-50 border border-stone-100 rounded-xl p-3.5 mt-4 text-xs">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <span class="text-stone-500 font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-0.5 text-amber-500"></i> 몰아서 선택하기:</span>
@@ -322,15 +355,19 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
+
                 </div>
+
             </section>
+
         </main>
     </div>
 
     <!-- Modals Area -->
 
-    <!-- FIRST VISIT WELCOME MODAL -->
+    <!-- FIRST VISIT WELCOME MODAL (최초 실행 시 '새로 가입' 및 '기존 계정 로그인' 선택형 모달) -->
     <div id="welcomeModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-stone-100 text-center animate-scale-up">
             <div class="bg-emerald-100 text-emerald-950 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
@@ -552,7 +589,7 @@
                     <span id="currentDbModeBadge" class="inline-block text-xs font-black px-3 py-1.5 rounded-xl bg-amber-100 text-amber-800">공용 무료 무선 서버로 동작 중</span>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-stone-400 mb-1" for="customFirebaseInput">나만의 Firebase Config JSON (선택)</label>
+                    <label class="block text-[11px] font-bold text-stone-400 mb-1">나만의 Firebase Config JSON (선택)</label>
                     <textarea id="customFirebaseInput" placeholder='{"apiKey": "AIzaSy...", "authDomain": "...", "projectId": "..."}' class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs h-28 focus:outline-emerald-600 font-mono bg-stone-50"></textarea>
                 </div>
             </div>
@@ -576,7 +613,7 @@
 
             <div class="space-y-3 bg-stone-50 p-4 rounded-xl border border-stone-200/50 text-xs font-semibold text-stone-700">
                 <div class="flex justify-between">
-                    <span class="text-stone-400">아이디 (실명)</span>
+                    <span class="text-stone-400">실명 (아이디)</span>
                     <span id="syncResId" class="text-stone-800"></span>
                 </div>
                 <div class="flex justify-between">
@@ -808,10 +845,10 @@
             { id: 54, name: "디모데전서", eng: "1 Timothy", chapters: 6, category: "신약" },{ id: 55, name: "디모데후서", eng: "2 Timothy", chapters: 4, category: "신약" },
             { id: 56, name: "디도서", eng: "Titus", chapters: 3, category: "신약" },{ id: 57, name: "빌레몬서", eng: "Philemon", chapters: 1, category: "신약" },
             { id: 58, name: "히브리서", eng: "Hebrews", chapters: 13, category: "신약" },{ id: 59, name: "야고보서", eng: "James", chapters: 5, category: "신약" },
-            { id: 60, name: "베드로전서", eng: "1 Peter", chapters: 5, category: "신약" }, // 베드로전서 복원 완료!
-            { id: 61, name: "베드로후서", eng: "2 Peter", chapters: 3, category: "신약" },{ id: 62, name: "요한일서", eng: "1 John", chapters: 5, category: "신약" },
-            { id: 63, name: "요한이서", eng: "2 John", chapters: 1, category: "신약" },{ id: 64, name: "요한삼서", eng: "3 John", chapters: 1, category: "신약" },
-            { id: 65, name: "유다서", eng: "Jude", chapters: 1, category: "신약" },{ id: 66, name: "요한계시록", eng: "Revelation", chapters: 22, category: "신약" }
+            { id: 60, name: "베드로전서", eng: "1 Peter", chapters: 5, category: "신약" },{ id: 61, name: "베드로후서", eng: "2 Peter", chapters: 3, category: "신약" },
+            { id: 62, name: "요한일서", eng: "1 John", chapters: 5, category: "신약" },{ id: 63, name: "요한이서", eng: "2 John", chapters: 1, category: "신약" },
+            { id: 64, name: "요한삼서", eng: "3 John", chapters: 1, category: "신약" },{ id: 65, name: "유다서", eng: "Jude", chapters: 1, category: "신약" },
+            { id: 66, name: "요한계시록", eng: "Revelation", chapters: 22, category: "신약" }
         ];
 
         // Firebase & Fallback Variables
@@ -867,7 +904,7 @@
         }
 
         // Initialize Firebase dynamically (With Custom user Firebase configuration support!) (Rule 3 준수)
-        function initFirebaseAndAuth() {
+        async function initFirebaseAndAuth() {
             let firebaseConfig = null;
             
             const savedCustomConfig = localStorage.getItem('custom_firebase_config_v3');
@@ -895,17 +932,27 @@
                     db = firebase.firestore();
 
                     // Rule 3: Auth first 및 로그인 완료 전 통신 차단벽 설계
-                    auth.signInAnonymously().then((cred) => {
-                        currentUser = cred.user;
-                        isFirebaseEnabled = true; // 로그인이 성공적으로 끝난 시점에만 연동 신호 활성화!
+                    let userCred;
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        userCred = await auth.signInWithCustomToken(__initial_auth_token);
+                    } else {
+                        userCred = await auth.signInAnonymously();
+                    }
+                    currentUser = userCred.user;
+                    isFirebaseEnabled = true; // 로그인이 성공적으로 끝난 시점에만 연동 신호 활성화!
 
-                        if (state.currentRoomId) {
-                            joinRoomSync(state.currentRoomId);
-                        }
-                    }).catch(e => {
-                        console.error("Firebase Auth Error:", e);
-                        setupFallbackSync();
-                    });
+                    const modeBadge = document.getElementById('currentDbModeBadge');
+                    if (modeBadge) {
+                        modeBadge.className = "inline-block text-xs font-black px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800";
+                        modeBadge.innerText = savedCustomConfig ? "나만의 개인 Firebase 연동 작동 중!" : "실시간 단독 클라우드 구동 중";
+                    }
+
+                    // 인증 완료 후 안전하게 방 로드 시작
+                    if (state.currentRoomId) {
+                        joinRoomSync(state.currentRoomId);
+                    } else {
+                        renderLobbyScreen();
+                    }
 
                 } catch (e) {
                     console.error("Firebase 초기화 에러 (안전 폴백 연결 가동):", e);
@@ -1075,6 +1122,8 @@
         // Push reading checklist change to cloud database immediately
         async function syncStateToCloud() {
             if (!state.myProfile || !state.currentRoomId) return;
+            const roomId = state.currentRoomId;
+            if (!roomId || typeof roomId !== 'string' || roomId.trim() === '') return;
 
             const myUserObj = state.users[state.myProfile.id];
             if (!myUserObj) return;
@@ -1084,21 +1133,21 @@
 
             if (isFirebaseEnabled && currentUser) {
                 try {
-                    const roomDocRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(state.currentRoomId);
+                    const roomDocRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(roomId);
                     await roomDocRef.update({
                         [`users.${state.myProfile.id}`]: myUserObj
                     });
                 } catch (e) {
                     try {
-                        const roomDocRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(state.currentRoomId);
-                        const roomName = (state.myRooms.find(r => r.id === state.currentRoomId) || {}).name || "새 성경방";
+                        const roomDocRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(roomId);
+                        const roomName = (state.myRooms.find(r => r.id === roomId) || {}).name || "새 성경방";
                         await roomDocRef.set({ roomName: roomName, users: state.users }, { merge: true });
                     } catch(err) {
                         console.error("Firestore push error:", err);
                     }
                 }
             } else {
-                await saveFallbackData(state.currentRoomId);
+                await saveFallbackData(roomId);
             }
         }
 
@@ -1106,6 +1155,7 @@
         async function syncAccountToCloud() {
             if (!state.myProfile || !state.myProfile.syncKey) return;
             const syncKey = state.myProfile.syncKey;
+            if (!syncKey || typeof syncKey !== 'string' || syncKey.trim() === '') return;
 
             const payload = {
                 myProfile: state.myProfile,
@@ -2074,7 +2124,7 @@
         }
 
 
-        // --- SYNC ACCOUNT CONTROLLER (아이디 비밀번호 기반) ---
+        // --- SYNC ACCOUNT CONTROLLER (실명 기반 가입/로그인) ---
 
         function openSyncAccountModal() {
             const profile = state.myProfile;
@@ -2096,7 +2146,7 @@
                             <i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i> 기기 데이터 백업 가입
                         </h3>
                         <p class="text-xs text-stone-500 mb-4 leading-relaxed">
-                            현재 기기의 기록을 보존하기 위해 실명(아이디)과 4자리 비밀번호를 생성해 주세요.
+                            현재 기기의 기록을 보존하기 위해 실명(로그인용 고유 아이디)과 4자리 비밀번호를 생성해 주세요.
                         </p>
                         <div class="space-y-3">
                             <div>
@@ -2782,10 +2832,10 @@
         });
 
         // DOMContentLoaded에 안전한 동적 연동 시작
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             loadStateFromLocalStorage();
-            initFirebaseAndAuth();
-            checkAndTriggerProfileWelcome();
+            await initFirebaseAndAuth(); // [RULE 3 준수 ⭐] 로그인이 완료될 때까지 비동기 대기 처리!
+            checkAndTriggerProfileWelcome(); // 로그인 완료 후 안전하게 가동
             getNewVerse();
             updateDailyGoal();
         });
