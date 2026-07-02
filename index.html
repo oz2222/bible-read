@@ -13,7 +13,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link class="file-accessible" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts for elegant Korean text -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     
@@ -128,7 +128,7 @@
     </div>
 
 
-    <!-- MAIN READ SCREEN (방 입장 후 성경 읽기표 화면) -->
+    <!-- MAIN READ SCREEN -->
     <div id="readScreen" class="hidden flex-grow flex flex-col">
         <!-- Top Navigation Header -->
         <header class="bg-emerald-900 text-stone-100 shadow-md sticky top-0 z-40 transition-all">
@@ -193,7 +193,7 @@
                         <span class="text-xs text-stone-500 font-medium" id="bibleCompleteDateEstimation">완독 예정일 계산 중...</span>
                     </div>
 
-                    <!-- Progress Stats -->
+                    <!-- Main Progress Ring & Stat -->
                     <div class="flex items-center gap-5 my-4">
                         <div class="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
                             <svg class="w-full h-full transform -rotate-90">
@@ -225,7 +225,7 @@
                         </div>
                     </div>
 
-                    <!-- Target input -->
+                    <!-- Settings -->
                     <div class="bg-stone-50 rounded-xl p-3 border border-stone-100 text-xs text-stone-600 space-y-2.5">
                         <div class="flex justify-between items-center">
                             <span class="font-medium">하루 목표 읽기 분량:</span>
@@ -250,7 +250,7 @@
                     <div class="space-y-4" id="compareUsersContainer"></div>
                 </div>
 
-                <!-- Motivation widget -->
+                <!-- Helpful Bible Quotes -->
                 <div class="bg-amber-50/70 border border-amber-200/50 rounded-2xl p-4 text-stone-700 text-xs relative">
                     <i class="fa-solid fa-quote-left absolute top-3 left-3 text-amber-200 text-2xl"></i>
                     <div class="pl-6 relative z-10">
@@ -366,6 +366,7 @@
                     <input type="password" id="welcomeUserPw" placeholder="숫자 4자리 입력" maxlength="4" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600 font-bold tracking-widest text-stone-800 text-center">
                 </div>
                 
+                <!-- 자동 로그인 설정 체크박스 🔑 -->
                 <div class="flex items-center justify-between pt-1">
                     <label class="flex items-center gap-2 text-xs text-stone-600 cursor-pointer">
                         <input type="checkbox" id="welcomeRegisterAutoLogin" class="rounded text-emerald-600 focus:ring-emerald-500" checked>
@@ -387,7 +388,7 @@
                 </button>
             </div>
 
-            <!-- View 2: Login -->
+            <!-- View 2: Login (로그인) -->
             <div id="wView_login" class="space-y-3.5 text-left hidden">
                 <div>
                     <label class="block text-[11px] font-bold text-stone-400 mb-0.5" for="welcomeSyncId">실명 (아이디)</label>
@@ -398,6 +399,7 @@
                     <input type="password" id="welcomeSyncPw" placeholder="숫자 4자리 입력" maxlength="4" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-indigo-600 font-bold tracking-widest text-stone-800 text-center">
                 </div>
 
+                <!-- 자동 로그인 설정 체크박스 🔑 -->
                 <div class="flex items-center justify-between pt-1">
                     <label class="flex items-center gap-2 text-xs text-stone-600 cursor-pointer">
                         <input type="checkbox" id="welcomeLoginAutoLogin" class="rounded text-indigo-600 focus:ring-indigo-500" checked>
@@ -471,7 +473,7 @@
             </div>
 
             <div class="flex gap-2 mt-6">
-                <button onclick="closeAddUserModal()" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-2 rounded-xl text-sm transition-all">취소</button>
+                <button onclick="closeAddUserModal()" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-2 rounded-xl text-xs transition-all">취소</button>
                 <button onclick="submitNewUser()" class="flex-1 bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-sm transition-all">추가하기</button>
             </div>
         </div>
@@ -502,7 +504,7 @@
                 <div>
                     <label class="block text-xs font-bold text-stone-500 mb-1" for="importCodeInput">가져온 코드 수동 복원하기</label>
                     <textarea id="importCodeInput" placeholder="이곳에 이전에 복사해둔 백업 코드를 붙여넣어 주세요" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs h-20 resize-none font-mono focus:outline-emerald-600"></textarea>
-                    <button onclick="importShareCode()" class="mt-1.5 w-full bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                    <button onclick="importShareCode()" class="mt-1.5 w-full bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-cloud-arrow-down"></i> 코드에서 읽기 데이터 복원하기
                     </button>
                 </div>
@@ -641,7 +643,7 @@
             <!-- Admin Dashboard -->
             <div id="adminDashboardSection" class="hidden space-y-4 text-left">
                 <div class="bg-stone-50 p-3 rounded-xl border border-stone-200/50">
-                    <label class="block text-[11px] font-bold text-stone-500 mb-1">사용자 실명 (아이디) 조회</label>
+                    <label class="block text-[11px] font-bold text-stone-500 mb-1" for="adminSearchId">사용자 실명 (아이디) 조회</label>
                     <div class="flex gap-2">
                         <input type="text" id="adminSearchId" placeholder="예: 홍길동" class="flex-grow px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-indigo-600 font-semibold text-stone-800 bg-white">
                         <button onclick="adminSearchUser()" class="bg-stone-900 hover:bg-stone-800 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all whitespace-nowrap">조회</button>
@@ -844,8 +846,9 @@
         // Firebase & Fallback Variables
         let db = null;
         let auth = null;
-        // [RULE 1 & 3 예외 사전 안전 셋업 ⭐] Falsy나 "" 빈 주소일 때 생기는 권한 에러를 안전하게 격리 보호!
-        let appId = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'default-app-id';
+        // [CORS 및 빈 경로 에러 해결 수퍼 가드 ⭐] 
+        // __app_id가 비어있거나 공백 문자열인 경우, Firestore doc() 에러를 예방하기 위해 강제 안전 고유 키로 설정!
+        let appId = (typeof __app_id !== 'undefined' && __app_id && __app_id.trim() !== '') ? __app_id : 'default-app-id';
         let isFirebaseEnabled = false;
         let roomUnsubscribe = null;
         let currentUser = null;
@@ -855,8 +858,6 @@
 
         // Save State strictly to Local Storage AND Cloud backup (If connected!)
         function saveStateToLocalStorage() {
-            // [자동 로그인 유효화 고도화 🔑]
-            // 자동 로그인 'autoLogin' 설정값에 따라 SessionStorage와 LocalStorage 영구 분할 연동 처리!
             sessionStorage.setObj('bible_profile', state.myProfile);
             sessionStorage.setObj('bible_rooms', state.myRooms);
             if (state.currentRoomId) {
@@ -887,14 +888,12 @@
 
         // Load State from Storage (임시 Session 및 영구 Storage 이원 로딩 연동 설계 🔑)
         function loadStateFromLocalStorage() {
-            // 1차적으로 브라우저 새로고침용 임시 sessionStorage 판독
             let profile = sessionStorage.getObj('bible_profile');
             let rooms = sessionStorage.getObj('bible_rooms');
             let currentRoom = sessionStorage.getItem('bible_current_room');
 
             const autoLoginActive = localStorage.getItem('autoLogin') === 'true';
             if (!profile && autoLoginActive) {
-                // 자동 로그인이 체크되어 있다면 영구 저장소에서 로드
                 profile = localStorage.getObj('bible_profile_perm');
                 rooms = localStorage.getObj('bible_rooms_perm');
                 currentRoom = localStorage.getItem('bible_current_room_perm');
@@ -905,7 +904,6 @@
                 state.myRooms = rooms || [];
                 state.currentRoomId = currentRoom;
                 
-                // 기본 구조 마이그레이션 예외 가드 
                 if (!state.users || typeof state.users !== 'object') state.users = {};
                 if (!state.activeUserId) state.activeUserId = "";
                 if (!state.activeBookId) state.activeBookId = 1;
@@ -961,7 +959,7 @@
 
                     // Rule 3: Auth first 및 로그인 완료 전 통신 차단벽 설계
                     let userCred;
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && __initial_auth_token.trim() !== '') {
                         userCred = await auth.signInWithCustomToken(__initial_auth_token);
                     } else {
                         userCred = await auth.signInAnonymously();
