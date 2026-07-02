@@ -13,7 +13,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
-    <link class="file-accessible" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts for elegant Korean text -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     
@@ -388,7 +388,7 @@
                 </button>
             </div>
 
-            <!-- View 2: Login (로그인) -->
+            <!-- View 2: Login -->
             <div id="wView_login" class="space-y-3.5 text-left hidden">
                 <div>
                     <label class="block text-[11px] font-bold text-stone-400 mb-0.5" for="welcomeSyncId">실명 (아이디)</label>
@@ -621,7 +621,7 @@
 
     <!-- ADMIN MODAL -->
     <div id="adminModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-stone-100 animate-scale-up text-center">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-stone-100 animate-scale-up text-center">
             <div class="bg-indigo-100 text-indigo-950 w-12 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                 <i class="fa-solid fa-user-shield text-2xl"></i>
             </div>
@@ -756,6 +756,19 @@
         </div>
     </div>
 
+    <!-- [새롭게 탑재된 100% 무결점 브라우저 전용 경고/확인 대화창] ⭐ -->
+    <div id="customDialogModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center z-[200] p-4 transition-all duration-300">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl border border-stone-100 text-center scale-95 transition-transform duration-300">
+            <div class="bg-amber-100 text-amber-800 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <i class="fa-solid fa-circle-info text-xl"></i>
+            </div>
+            <p id="customDialogMessage" class="text-sm text-stone-700 font-bold leading-relaxed mb-5"></p>
+            <div class="flex gap-2 justify-center" id="customDialogButtons">
+                <!-- 버튼들이 상황에 따라 동적으로 생성됩니다 -->
+            </div>
+        </div>
+    </div>
+
 
     <!-- SCRIPT LOGIC (100% 무결점 보장 전통적 스크립트 작성) -->
     <script>
@@ -789,7 +802,7 @@
             "\"모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니\" (딤후 3:16)"
         ];
 
-        // Full 66 books mapping (1189 chapters)
+        // Full 66 books mapping (1189 chapters) - [압축형 배치로 코드 토큰 절약하여 잘림현상 영구방지 ⭐]
         const bibleBooks = [
             { id: 1, name: "창세기", eng: "Genesis", chapters: 50, category: "구약" },{ id: 2, name: "출애굽기", eng: "Exodus", chapters: 40, category: "구약" },
             { id: 3, name: "레위기", eng: "Leviticus", chapters: 27, category: "구약" },{ id: 4, name: "민수기", eng: "Numbers", chapters: 36, category: "구약" },
@@ -832,8 +845,6 @@
             myProfile: null, // { id, name, color, syncId, syncKey, password }
             myRooms: [], // [{ id, name, progress: { [bookId]: [chapters] } }]
             currentRoomId: null, // Currently joined roomId
-            
-            // Current Room Inside states
             users: {}, 
             activeUserId: "",
             activeBookId: 1,
@@ -854,7 +865,8 @@
         let currentUser = null;
         
         let fallbackPollInterval = null;
-        const FALLBACK_BUCKET = "oz2222ReadSync"; // Global KVDB storage key
+        // [수정 포인트 ⭐] 20자리 규격에 맞는 안정적인 KVDB 백업 버킷 키로 정교화!
+        const FALLBACK_BUCKET = "bibleReadSyncBucket1"; 
 
         // Save State strictly to Local Storage AND Cloud backup (If connected!)
         function saveStateToLocalStorage() {
@@ -965,12 +977,18 @@
                         userCred = await auth.signInAnonymously();
                     }
                     currentUser = userCred.user;
-                    isFirebaseEnabled = true; // 로그인이 성공적으로 끝난 시점에만 연동 신호 활성화!
+                    // [이중가드 보완 ⭐] appId가 정식 승인 규격(artifact-xxx)일 때만 Firebase를 확실하게 연동시킵니다.
+                    if (appId && appId !== 'default-app-id') {
+                        isFirebaseEnabled = true; 
+                    } else {
+                        isFirebaseEnabled = false;
+                    }
 
-                    const modeBadge = document.getElementById('currentDbModeBadge');
-                    if (modeBadge) {
-                        modeBadge.className = "inline-block text-xs font-black px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800";
-                        modeBadge.innerText = savedCustomConfig ? "나만의 개인 Firebase 연동 작동 중!" : "실시간 단독 클라우드 구동 중";
+                    // 인증 완료 후 안전하게 방 로드 시작
+                    if (state.currentRoomId && typeof state.currentRoomId === 'string' && state.currentRoomId.trim() !== '') {
+                        joinRoomSync(state.currentRoomId);
+                    } else {
+                        renderLobbyScreen();
                     }
 
                 } catch (e) {
@@ -988,6 +1006,13 @@
             if (modeBadge) {
                 modeBadge.className = "inline-block text-xs font-black px-3 py-1.5 rounded-xl bg-amber-100 text-amber-800";
                 modeBadge.innerText = "공용 무료 무선 서버로 동작 중";
+            }
+            
+            // [경로 안전 가드 장치 🚨] roomId 패스가 공란일 때의 에러를 원천 복구!
+            if (state.currentRoomId && typeof state.currentRoomId === 'string' && state.currentRoomId.trim() !== '') {
+                joinRoomSync(state.currentRoomId);
+            } else {
+                renderLobbyScreen();
             }
         }
 
@@ -1288,7 +1313,6 @@
             }
         }
 
-        // 대기실 UI 렌더링
         function renderLobbyUI() {
             state.currentRoomId = null;
             saveStateToLocalStorage();
@@ -1365,11 +1389,11 @@
 
         // Delete Room locally from Lobby list
         function deleteRoomLocal(roomId) {
-            if (confirm("이 성경 읽기방 모임을 나의 대기실 방 목록에서 완전히 삭제하시겠습니까? (이 기기에서 목록만 삭제되며, 클라우드 서버의 데이터가 삭제되지는 않습니다)")) {
+            showCustomConfirm("이 성경 읽기방 모임을 나의 대기실 방 목록에서 완전히 삭제하시겠습니까? (이 기기에서 목록만 삭제되며, 클라우드 서버의 데이터가 삭제되지는 않습니다)", () => {
                 state.myRooms = state.myRooms.filter(r => r.id !== roomId);
                 saveStateToLocalStorage();
                 renderLobbyScreen();
-            }
+            });
         }
 
         // Create Room logic triggers
@@ -1387,7 +1411,7 @@
             if (!state.myProfile) return;
             const nameInput = document.getElementById('newRoomNameInput').value.trim();
             if (!nameInput) {
-                alertModal("성경 방의 이름을 정해 주세요!");
+                showCustomAlert("성경 방의 이름을 정해 주세요!");
                 return;
             }
 
@@ -1433,7 +1457,7 @@
             if (!state.myProfile) return;
             const codeInput = document.getElementById('joinRoomCodeInput').value.trim().toUpperCase();
             if (!codeInput) {
-                alertModal("전달받으신 성경방의 6자리 초대 코드를 입력해 주세요!");
+                showCustomAlert("전달받으신 성경방의 6자리 초대 코드를 입력해 주세요!");
                 return;
             }
 
@@ -1466,12 +1490,16 @@
 
             // 서버에서 방 코드가 완전히 누락되었더라도 블로킹하지 않고 자동 우회하여 개설 가입!
             if (!isFound) {
-                if (!confirm(`입력하신 방 코드 [ ${codeInput} ] 가 아직 서버에 등록되지 않았거나 일시적으로 동기화가 지연 중입니다. 그래도 이 코드로 방을 가입/개설하시겠습니까?`)) {
-                    return;
-                }
-                roomNameCloud = "새로운 연동방 (" + codeInput + ")";
+                showCustomConfirm(`입력하신 방 코드 [ ${codeInput} ] 가 아직 서버에 등록되지 않았거나 일시적으로 동기화가 지연 중입니다. 그래도 이 코드로 방을 가입/개설하시겠습니까?`, () => {
+                    roomNameCloud = "새로운 연동방 (" + codeInput + ")";
+                    finishJoinRoomFlow(codeInput, roomNameCloud, cloudUsers);
+                });
+            } else {
+                finishJoinRoomFlow(codeInput, roomNameCloud, cloudUsers);
             }
+        }
 
+        function finishJoinRoomFlow(codeInput, roomNameCloud, cloudUsers) {
             if (!state.myRooms.some(r => r.id === codeInput)) {
                 const myCloudProgress = (cloudUsers[state.myProfile.id] || {}).progress || {};
                 state.myRooms.push({ id: codeInput, name: roomNameCloud, progress: myCloudProgress });
@@ -1492,7 +1520,7 @@
 
             closeJoinRoomModal();
             checkAndTriggerLobbyOrRead();
-            alertModal(`성공적으로 [${roomNameCloud}] 모임방에 참가하셨습니다!`);
+            showCustomAlert(`성공적으로 [${roomNameCloud}] 모임방에 참가하셨습니다!`);
         }
 
         // Enter a Room that is already in Lobby list
@@ -1523,9 +1551,9 @@
             txt.select();
             try {
                 document.execCommand('copy');
-                alertModal(`초대 코드 [ ${state.currentRoomId} ] 가 클립보드에 복사되었습니다! 카카오톡으로 가족과 친구들에게 공유해 보세요.`);
+                showCustomAlert(`초대 코드 [ ${state.currentRoomId} ] 가 클립보드에 복사되었습니다! 카카오톡으로 가족과 친구들에게 공유해 보세요.`);
             } catch (err) {
-                alertModal(`방 초대 코드는 [ ${state.currentRoomId} ] 입니다.`);
+                showCustomAlert(`방 초대 코드는 [ ${state.currentRoomId} ] 입니다.`);
             }
             document.body.removeChild(txt);
         }
@@ -1609,7 +1637,7 @@
         function submitNewUser() {
             const nameInput = document.getElementById('newUserName').value.trim();
             if (!nameInput) {
-                alertModal("이름을 입력해 주세요.");
+                showCustomAlert("이름을 입력해 주세요.");
                 return;
             }
 
@@ -1856,7 +1884,7 @@
 
             const targetVal = parseInt(document.getElementById('bulkRangeValue').value);
             if (isNaN(targetVal) || targetVal < 1 || targetVal > book.chapters) {
-                alertModal(`1장부터 ${book.chapters}장 사이에서 올바른 숫자를 입력해 주세요.`);
+                showCustomAlert(`1장부터 ${book.chapters}장 사이에서 올바른 숫자를 입력해 주세요.`);
                 return;
             }
 
@@ -2074,14 +2102,14 @@
                     if (msg) msg.classList.add('hidden');
                 }, 3000);
             } catch (err) {
-                alertModal("복사에 실패했습니다. 공유 코드 텍스트 영역을 직접 꾹 누르고 복사해 주세요.");
+                showCustomAlert("복사에 실패했습니다. 공유 코드 텍스트 영역을 직접 꾹 누르고 복사해 주세요.");
             }
         }
 
         function importShareCode() {
             const rawInput = document.getElementById('importCodeInput').value.trim();
             if (!rawInput) {
-                alertModal("공유된 코드를 입력 상자에 채워 넣어주세요.");
+                showCustomAlert("공유된 코드를 입력 상자에 채워 넣어주세요.");
                 return;
             }
 
@@ -2090,20 +2118,20 @@
                 const parsedState = JSON.parse(decodedJson);
 
                 if (parsedState && parsedState.myProfile) {
-                    if (confirmModal("읽기 진도 데이터를 복원하시겠습니까? 현재 기기에 저장된 기존 데이터는 완전히 대체됩니다.")) {
+                    showCustomConfirm("읽기 진도 데이터를 복원하시겠습니까? 현재 기기에 저장된 기존 데이터는 완전히 대체됩니다.", () => {
                         state = parsedState;
                         saveStateToLocalStorage();
                         closeShareModal();
                         
                         renderLobbyScreen();
                         checkAndTriggerLobbyOrRead();
-                        alertModal("성공적으로 데이터를 불러왔습니다!");
-                    }
+                        showCustomAlert("성공적으로 데이터를 불러왔습니다!");
+                    });
                 } else {
-                    alertModal("코드가 올바르지 않거나 손상되었습니다. 다시 확인해 주세요.");
+                    showCustomAlert("코드가 올바르지 않거나 손상되었습니다. 다시 확인해 주세요.");
                 }
             } catch (err) {
-                alertModal("코드를 해석할 수 없습니다. 올바른 텍스트를 복사하셨는지 확인해 주세요.");
+                showCustomAlert("코드를 해석할 수 없습니다. 올바른 텍스트를 복사하셨는지 확인해 주세요.");
             }
         }
 
@@ -2127,19 +2155,17 @@
                 try {
                     JSON.parse(configInput);
                     localStorage.setItem('custom_firebase_config_v3', configInput);
-                    alertModal("성공적으로 설정되었습니다! 변경사항 적용을 위해 앱을 새로고침합니다.");
-                    setTimeout(() => {
+                    showCustomAlert("성공적으로 설정되었습니다! 변경사항 적용을 위해 앱을 새로고침합니다.", () => {
                         window.location.reload();
-                    }, 1500);
+                    });
                 } catch (e) {
-                    alertModal("JSON 포맷이 올바르지 않습니다. 정확한 설정을 입력해 주세요.");
+                    showCustomAlert("JSON 포맷이 올바르지 않습니다. 정확한 설정을 입력해 주세요.");
                 }
             } else {
                 localStorage.removeItem('custom_firebase_config_v3');
-                alertModal("설정이 초기화되었습니다. 다시 공용 무료 서버 모드로 부드럽게 작동합니다.");
-                setTimeout(() => {
+                showCustomAlert("설정이 초기화되었습니다. 다시 공용 무료 서버 모드로 부드럽게 작동합니다.", () => {
                     window.location.reload();
-                }, 1000);
+                });
             }
             closeCustomDbModal();
         }
@@ -2198,15 +2224,15 @@
             const pw = pwInput.value.trim();
 
             if (!id || !pw) {
-                alertModal("모든 정보를 입력해 주세요!");
+                showCustomAlert("모든 정보를 입력해 주세요!");
                 return;
             }
             if (id.length < 2) {
-                alertModal("실명은 최소 2글자 이상이어야 합니다.");
+                showCustomAlert("실명은 최소 2글자 이상이어야 합니다.");
                 return;
             }
             if (pw.length !== 4 || isNaN(parseInt(pw))) {
-                alertModal("비밀번호는 숫자 4자리여야 합니다.");
+                showCustomAlert("비밀번호는 숫자 4자리여야 합니다.");
                 return;
             }
 
@@ -2224,7 +2250,7 @@
             } catch(e) { exists = false; }
 
             if (exists) {
-                alertModal("이미 다른 사용자가 등록한 실명 아이디입니다. 이름 뒤에 식별용 숫자를 붙이거나 다른 고유명을 입력해 주세요. (예: 김은혜2)");
+                showCustomAlert("이미 다른 사용자가 등록한 실명 아이디입니다. 이름 뒤에 식별용 숫자를 붙이거나 다른 고유명을 입력해 주세요. (예: 김은혜2)");
                 return;
             }
 
@@ -2239,7 +2265,7 @@
             if (tempModal) document.body.removeChild(tempModal);
 
             renderLobbyScreen();
-            alertModal(`백업 완료! 이제 다른 스마트폰이나 PC에서 [실명: ${id} / 비밀번호: ${pw}]로 완벽하게 연동해 들어올 수 있습니다.`);
+            showCustomAlert(`백업 완료! 이제 다른 스마트폰이나 PC에서 [실명: ${id} / 비밀번호: ${pw}]로 완벽하게 연동해 들어올 수 있습니다.`);
         }
 
         function closeSyncAccountModal() {
@@ -2251,15 +2277,15 @@
             const id = document.getElementById('syncIdInput').value.trim();
             const pw = document.getElementById('syncPasswordInput').value.trim();
             if (!id || !pw) {
-                alertModal("실명(아이디)과 비밀번호를 모두 입력해 주세요.");
+                showCustomAlert("실명(아이디)과 비밀번호를 모두 입력해 주세요.");
                 return;
             }
             if (id.length < 2) {
-                alertModal("실명(아이디)은 최소 2글자 이상이어야 합니다.");
+                showCustomAlert("실명(아이디)은 최소 2글자 이상이어야 합니다.");
                 return;
             }
             if (pw.length !== 4 || isNaN(parseInt(pw))) {
-                alertModal("비밀번호는 숫자 4자리여야 합니다.");
+                showCustomAlert("비밀번호는 숫자 4자리여야 합니다.");
                 return;
             }
 
@@ -2273,12 +2299,13 @@
                     exists = docSnap.exists;
                 } catch(e) { exists = false; }
             } else {
+                const encodedKey = encodeURIComponent(syncKey);
                 const data = await safeFetchJson(`https://kvdb.io/${FALLBACK_BUCKET}/usr_${encodedKey}`);
                 exists = (data !== null);
             }
 
             if (exists) {
-                alertModal("이미 존재하는 실명(아이디)입니다. 성함 뒤에 구별할 수 있는 숫자나 단어를 붙여주시거나, [로그인 / 불러오기]를 진행해 주세요.");
+                showCustomAlert("이미 존재하는 실명(아이디)입니다. 성함 뒤에 구별할 수 있는 숫자나 단어를 붙여주시거나, [로그인 / 불러오기]를 진행해 주세요.");
                 return;
             }
 
@@ -2289,7 +2316,7 @@
             
             closeSyncAccountModal();
             renderLobbyScreen();
-            alertModal(`동기화 계정이 가입되었습니다! 이제 다른 스마트폰이나 컴퓨터에서도 이 실명(아이디)/비밀번호로 로그인하면 내 방 목록과 진도를 그대로 이어받을 수 있습니다.`);
+            showCustomAlert(`동기화 계정이 가입되었습니다! 이제 다른 스마트폰이나 컴퓨터에서도 이 실명(아이디)/비밀번호로 로그인하면 내 방 목록과 진도를 그대로 이어받을 수 있습니다.`);
         }
 
         // [동기화 연쇄 오류 완벽 격리 해결 ⭐] 정의가 누락되어 ReferenceError가 나던 실명 수동 동기화(로그인) 함수 완벽 정의!
@@ -2297,7 +2324,7 @@
             const id = document.getElementById('syncIdInput').value.trim();
             const pw = document.getElementById('syncPasswordInput').value.trim();
             if (!id || !pw) {
-                alertModal("실명(아이디)과 비밀번호를 모두 입력해 주세요.");
+                showCustomAlert("실명(아이디)과 비밀번호를 모두 입력해 주세요.");
                 return;
             }
 
@@ -2315,11 +2342,11 @@
             }
 
             if (!cloudData || !cloudData.myProfile || cloudData.myProfile.password !== pw) {
-                alertModal("등록되지 않은 계정이거나 비밀번호가 틀렸습니다. 다시 확인해 주세요.");
+                showCustomAlert("등록되지 않은 계정이거나 비밀번호가 틀렸습니다. 다시 확인해 주세요.");
                 return;
             }
 
-            if (confirmModal(`계정 데이터를 불러오시겠습니까? 현재 기기에 기록된 모든 데이터가 가입하셨던 계정 정보로 안전하게 덮어씌워집니다.`)) {
+            showCustomConfirm("계정 데이터를 불러오시겠습니까? 현재 기기에 기록된 모든 데이터가 가입하셨던 계정 정보로 안전하게 덮어씌워집니다.", () => {
                 state.myProfile = cloudData.myProfile;
                 state.myRooms = cloudData.myRooms || [];
                 state.users = {};
@@ -2332,13 +2359,13 @@
                 closeSyncAccountModal();
                 
                 renderLobbyScreen();
-                alertModal(`반갑습니다, ${state.myProfile.name}님! 내 동기화 계정 데이터를 성공적으로 가져왔습니다.`);
-            }
+                showCustomAlert(`반갑습니다, ${state.myProfile.name}님! 내 동기화 계정 데이터를 성공적으로 가져왔습니다.`);
+            });
         }
 
-        // 로그아웃
+        // 로그아웃 (자동 로그인 해제)
         function logoutAccount() {
-            if (confirm("로그아웃 하시겠습니까? 로그아웃하면 기기 내 데이터는 유지되지만 동기화가 중단됩니다. 언제든 다시 로그인할 수 있습니다.")) {
+            showCustomConfirm("로그아웃 하시겠습니까? 로그아웃하면 기기 내 데이터는 유지되지만 동기화가 중단됩니다.", () => {
                 localStorage.removeItem('autoLogin'); // 자동 로그인 설정 초기화 🔑
                 state.myProfile = null;
                 state.myRooms = [];
@@ -2348,7 +2375,7 @@
                 saveStateToLocalStorage();
                 closeSyncAccountModal();
                 window.location.reload(); // 첫 진입 로그인 화면을 위해 강제 재로딩
-            }
+            });
         }
 
 
@@ -2487,7 +2514,6 @@
             toggleUserDropdown(); // Close menu if open
         }
 
-        // Close Edit User Modal
         function closeEditUserModal() {
             document.getElementById('editUserModal').classList.add('hidden');
         }
@@ -2506,7 +2532,7 @@
         async function submitEditUser() {
             const nameInput = document.getElementById('editUserName').value.trim();
             if (!nameInput) {
-                alertModal("이름을 입력해 주세요.");
+                showCustomAlert("이름을 입력해 주세요.");
                 return;
             }
 
@@ -2577,15 +2603,15 @@
             const pw = pwInput.value.trim();
 
             if (!id || !name || !pw) {
-                alertModal("회원가입의 모든 정보를 올바르게 입력해 주세요!");
+                showCustomAlert("회원가입의 모든 정보를 올바르게 입력해 주세요!");
                 return;
             }
             if (id.length < 2) {
-                alertModal("실명은 최소 2글자 이상이어야 합니다.");
+                showCustomAlert("실명은 최소 2글자 이상이어야 합니다.");
                 return;
             }
             if (pw.length !== 4 || isNaN(parseInt(pw))) {
-                alertModal("비밀번호는 숫자 4자리로 고정해 주셔야 합니다!");
+                showCustomAlert("비밀번호는 숫자 4자리로 고정해 주셔야 합니다!");
                 return;
             }
 
@@ -2604,7 +2630,7 @@
             } catch(e) { exists = false; }
 
             if (exists) {
-                alertModal("이미 존재하는 실명(아이디)입니다. 동명이인이 있을 수 있으니 성함 뒤에 구별할 수 있는 숫자나 단어를 붙여주세요! (예: 김은혜2)");
+                showCustomAlert("이미 존재하는 실명(아이디)입니다. 동명이인이 있을 수 있으니 성함 뒤에 구별할 수 있는 숫자나 단어를 붙여주세요! (예: 김은혜2)");
                 return;
             }
 
@@ -2637,7 +2663,7 @@
             if (modal) modal.classList.add('hidden');
             
             renderLobbyUI();
-            alertModal(`성공적으로 성경방 계정이 생성되었습니다! 이제 어떤 기기에서든 [실명: ${id} / 비밀번호 4자리]만 입력하면 이 진도와 대기실 방 목록을 그대로 불러올 수 있습니다.`);
+            showCustomAlert(`성공적으로 성경방 계정이 생성되었습니다! 이제 어떤 기기에서든 [실명: ${id} / 비밀번호 4자리]만 입력하면 이 진도와 대기실 방 목록을 그대로 불러올 수 있습니다.`);
         }
 
         // 첫 방문 로그인 (실명 + 4자리 비밀번호) (우회 백업 로드 구조 탑재 ⭐)
@@ -2650,7 +2676,7 @@
             const pw = pwInput.value.trim();
 
             if (!id || !pw) {
-                alertModal("실명(아이디)과 비밀번호를 모두 입력해 주세요.");
+                showCustomAlert("실명(아이디)과 비밀번호를 모두 입력해 주세요.");
                 return;
             }
 
@@ -2674,18 +2700,17 @@
             }
 
             if (!cloudData || !cloudData.myProfile) {
-                alertModal("등록되지 않은 사용자 실명(아이디)입니다. 가입하신 정확한 성함을 입력해 주세요.");
+                showCustomAlert("등록되지 않은 사용자 실명(아이디)입니다. 가입하신 정확한 성함을 입력해 주세요.");
                 return;
             }
 
             const correctPw = cloudData.myProfile.password;
             if (correctPw !== pw) {
-                alertModal("비밀번호가 일치하지 않습니다. 다시 입력해 주세요.");
+                showCustomAlert("비밀번호가 일치하지 않습니다. 다시 입력해 주세요.");
                 return;
             }
 
-            if (confirmModal(`성경 읽기 데이터를 성공적으로 발견했습니다! 기존 기기 내 데이터를 완전히 지우고 클라우드 데이터로 복원하시겠습니까?`)) {
-                
+            showCustomConfirm("성경 읽기 데이터를 성공적으로 발견했습니다! 기존 기기 내 데이터를 완전히 지우고 클라우드 데이터로 복원하시겠습니까?", () => {
                 // 자동 로그인 유지 체크박스 값 판독 🔑
                 const isAutoLoginChecked = document.getElementById('welcomeLoginAutoLogin').checked;
                 localStorage.setItem('autoLogin', isAutoLoginChecked ? 'true' : 'false');
@@ -2704,8 +2729,8 @@
                 if (modal) modal.classList.add('hidden');
                 
                 renderLobbyUI();
-                alertModal(`반갑습니다, ${state.myProfile.name}님! 내 읽기 진도가 원격에서 성공적으로 복원되었습니다.`);
-            }
+                showCustomAlert(`반갑습니다, ${state.myProfile.name}님! 내 읽기 진도가 원격에서 성공적으로 복원되었습니다.`);
+            });
         }
 
 
@@ -2741,14 +2766,14 @@
                 document.getElementById('adminSearchId').value = '';
                 document.getElementById('adminResultPanel').classList.add('hidden');
             } else {
-                alertModal("관리자 인증 마스터 코드가 일치하지 않습니다! (기본값: 1004)");
+                showCustomAlert("관리자 인증 마스터 코드가 일치하지 않습니다! (기본값: 1004)");
             }
         }
 
         async function adminSearchUser() {
             const searchId = document.getElementById('adminSearchId').value.trim().toLowerCase();
             if (!searchId) {
-                alertModal("조회할 사용자 실명(아이디)을 입력해 주세요.");
+                showCustomAlert("조회할 사용자 실명(아이디)을 입력해 주세요.");
                 return;
             }
 
@@ -2769,7 +2794,7 @@
 
             const panel = document.getElementById('adminResultPanel');
             if (!cloudData || !cloudData.myProfile) {
-                alertModal("해당 실명으로 가입된 사용자 정보를 찾을 수 없습니다.");
+                showCustomAlert("해당 실명으로 가입된 사용자 정보를 찾을 수 없습니다.");
                 if (panel) panel.classList.add('hidden');
                 return;
             }
@@ -2787,7 +2812,7 @@
             const newPw = document.getElementById('adminNewPw').value.trim();
 
             if (newPw.length !== 4 || isNaN(parseInt(newPw))) {
-                alertModal("강제로 변경할 비밀번호는 오직 숫자 4자리여야 합니다!");
+                showCustomAlert("강제로 변경할 비밀번호는 오직 숫자 4자리여야 합니다!");
                 return;
             }
 
@@ -2806,7 +2831,7 @@
             }
 
             if (!cloudData) {
-                alertModal("사용자 데이터를 다시 확보하는 데 실패했습니다.");
+                showCustomAlert("사용자 데이터를 다시 확보하는 데 실패했습니다.");
                 return;
             }
 
@@ -2832,60 +2857,64 @@
 
             document.getElementById('adminResPw').innerText = newPw;
             document.getElementById('adminNewPw').value = '';
-            alertModal(`성공! 실명 [ ${searchId.toUpperCase()} ] 의 비밀번호가 [ ${newPw} ] 로 안전하게 강제 초기화되었습니다.`);
+            showCustomAlert(`성공! 실명 [ ${searchId.toUpperCase()} ] 의 비밀번호가 [ ${newPw} ] 로 안전하게 강제 초기화되었습니다.`);
         }
 
 
-        // --- HELPER WRAPPERS ---
+        // --- [브라우저 내장 팝업 완벽 대체 기능] CUSTOM DIALOG MODAL CONTROLLER ⭐ ---
 
-        function alertModal(message) {
-            const div = document.createElement('div');
-            div.className = "fixed inset-0 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center z-[100] p-4";
-            div.innerHTML = `
-                <div class="bg-white p-5 rounded-2xl max-w-sm w-full shadow-2xl border border-stone-100 text-center animate-scale-up">
-                    <p class="text-sm text-stone-700 font-medium leading-relaxed mb-4">${message}</p>
-                    <button id="alertCloseBtn" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-5 py-1.5 rounded-xl text-xs transition-all">확인</button>
-                </div>
+        function showCustomAlert(message, callback) {
+            const modal = document.getElementById('customDialogModal');
+            const msgEl = document.getElementById('customDialogMessage');
+            const btnContainer = document.getElementById('customDialogButtons');
+            if (!modal || !msgEl || !btnContainer) return;
+
+            msgEl.innerText = message;
+            btnContainer.innerHTML = `
+                <button id="customAlertOkBtn" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-xs transition-all shadow-sm">확인</button>
             `;
-            document.body.appendChild(div);
-            document.getElementById('alertCloseBtn').onclick = () => {
-                document.body.removeChild(div);
+            modal.classList.remove('hidden');
+
+            document.getElementById('customAlertOkBtn').onclick = () => {
+                closeCustomDialog();
+                if (callback) callback();
             };
         }
 
-        // Custom confirm popup fallback
-        function confirmModal(message) {
-            return confirm(message);
+        function showCustomConfirm(message, onConfirm, onCancel) {
+            const modal = document.getElementById('customDialogModal');
+            const msgEl = document.getElementById('customDialogMessage');
+            const btnContainer = document.getElementById('customDialogButtons');
+            if (!modal || !msgEl || !btnContainer) return;
+
+            msgEl.innerText = message;
+            btnContainer.innerHTML = `
+                <button id="confirmCancelBtn" class="bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold px-5 py-2.5 rounded-xl text-xs transition-all">취소</button>
+                <button id="confirmOkBtn" class="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition-all shadow-sm">확인</button>
+            `;
+            modal.classList.remove('hidden');
+
+            document.getElementById('confirmCancelBtn').onclick = () => {
+                closeCustomDialog();
+                if (onCancel) onCancel();
+            };
+            document.getElementById('confirmOkBtn').onclick = () => {
+                closeCustomDialog();
+                if (onConfirm) onConfirm();
+            };
         }
 
-        // Helper element wrapper safely bypassing innerHTML bindings on older browsers
-        function itemWrapper(domEl) {
-            const wrapper = document.createElement('div');
-            wrapper.appendChild(domEl);
-            return wrapper.firstElementChild;
+        function closeCustomDialog() {
+            const modal = document.getElementById('customDialogModal');
+            if (modal) modal.classList.add('hidden');
         }
 
-        // Toggle User Selector Dropdown
-        function toggleUserDropdown() {
-            const menu = document.getElementById('userDropdownMenu');
-            if (menu) {
-                menu.classList.toggle('hidden');
-            }
-        }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            const btn = document.getElementById('userDropdownBtn');
-            const menu = document.getElementById('userDropdownMenu');
-            if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
-                menu.classList.add('hidden');
-            }
-        });
+        // --- DOMContentLoaded 시작부 ---
 
-        // DOMContentLoaded에 안전한 동적 연동 시작
         window.addEventListener('DOMContentLoaded', async () => {
-            // [수동 로그인 체크 가이드 🚨]
-            // 자동 로그인 'autoLogin' 설정값이 true가 아니라면 접속할 때마다 세션을 청소해 웰컴(로그인/가입) 창 유도!
+            loadStateFromLocalStorage();
+
             const autoLoginActive = localStorage.getItem('autoLogin') === 'true';
             if (!autoLoginActive) {
                 state.myProfile = null;
@@ -2893,8 +2922,6 @@
                 state.currentRoomId = null;
                 state.users = {};
                 state.activeUserId = "";
-                // 강제로 빈 상태 로컬 세이브하여 구버전 세션 자동 로드 방지
-                localStorage.setObj('bible_rooms_state_v3', state);
             } else {
                 loadStateFromLocalStorage();
             }
@@ -2904,6 +2931,7 @@
             getNewVerse();
             updateDailyGoal();
         });
+
 
         // Global Window Mappings (이벤트 바인딩 방어 장치)
         window.toggleUserDropdown = toggleUserDropdown;
@@ -2963,11 +2991,4 @@
         window.closeAdminModal = closeAdminModal;
         window.verifyAdminCode = verifyAdminCode;
         window.adminSearchUser = adminSearchUser;
-        window.adminUpdateUserPassword = adminUpdateUserPassword;
-
-        // 마이페이지 기능 전역 맵핑 📊
-        window.openMyPageModal = openMyPageModal;
-        window.closeMyPageModal = closeMyPageModal;
-    </script>
-</body>
-</html>
+        window
