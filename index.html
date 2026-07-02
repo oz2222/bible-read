@@ -128,7 +128,7 @@
     </div>
 
 
-    <!-- MAIN READ SCREEN -->
+    <!-- MAIN READ SCREEN (방 입장 후 성경 읽기표 화면) -->
     <div id="readScreen" class="hidden flex-grow flex flex-col">
         <!-- Top Navigation Header -->
         <header class="bg-emerald-900 text-stone-100 shadow-md sticky top-0 z-40 transition-all">
@@ -159,6 +159,7 @@
                         <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl bg-white shadow-xl ring-1 ring-black ring-opacity-5 divide-y divide-stone-100 z-50 animate-fade-in-down origin-top-right">
                             <div class="py-1" id="userListContainer"></div>
                             <div class="py-1.5 px-3 space-y-1">
+                                <!-- 방 내부에서도 마이페이지에 바로 들어갈 수 있도록 구성 📊 -->
                                 <button onclick="openMyPageModal()" class="w-full text-left px-2 py-1.5 text-xs text-indigo-700 font-bold hover:bg-indigo-50 rounded-lg flex items-center gap-1.5">
                                     <i class="fa-solid fa-chart-pie"></i> 전체 마이페이지
                                 </button>
@@ -177,8 +178,10 @@
 
         <!-- Main Content Grid -->
         <main class="flex-grow max-w-7xl w-full mx-auto p-3 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
             <!-- Left Panel -->
             <section class="lg:col-span-4 space-y-6">
+
                 <!-- Profile Card -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80 relative overflow-hidden">
                     <div class="absolute -right-4 -bottom-4 text-stone-100 pointer-events-none opacity-40">
@@ -197,7 +200,9 @@
                     <div class="flex items-center gap-5 my-4">
                         <div class="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
                             <svg class="w-full h-full transform -rotate-90">
+                                <!-- Track -->
                                 <circle cx="48" cy="48" r="40" stroke="#f1ede4" stroke-width="8" fill="transparent" />
+                                <!-- Progress Bar -->
                                 <circle id="progressRing" cx="48" cy="48" r="40" stroke="#10b981" stroke-width="8" fill="transparent" 
                                         stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" class="transition-all duration-500" />
                             </svg>
@@ -260,11 +265,13 @@
                         </button>
                     </div>
                 </div>
+
             </section>
 
             <!-- Right Panel: Bible Books Checklist -->
             <section class="lg:col-span-8 space-y-6">
-                <!-- Search and Categories -->
+
+                <!-- Category & Search Tabs -->
                 <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-stone-200/80 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex bg-stone-100 p-1 rounded-xl gap-1">
                         <button onclick="filterBibleCategory('전체')" id="tabBtn_전체" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all bg-white text-stone-800 shadow-sm">
@@ -277,14 +284,16 @@
                             신약 (27권)
                         </button>
                     </div>
+
                     <div class="relative w-full sm:w-auto">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-stone-400 text-xs"></i>
                         <input type="text" id="searchInput" oninput="searchBibleBook()" placeholder="성경 책 이름 검색... (예: 창세)" class="w-full sm:w-48 pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600">
                     </div>
                 </div>
 
-                <!-- Columns -->
+                <!-- Double-Column View -->
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[500px]">
+
                     <div class="md:col-span-5 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-3 flex flex-col max-h-[550px]">
                         <span class="text-xs text-stone-400 font-bold px-2 py-1 flex items-center gap-1 border-b border-stone-100 pb-2">
                             <i class="fa-solid fa-scroll"></i> 성경 목록 선택
@@ -293,6 +302,7 @@
                     </div>
 
                     <div class="md:col-span-7 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-4 md:p-5 flex flex-col justify-between max-h-[550px]">
+                        
                         <div class="flex-grow flex flex-col overflow-hidden">
                             <div class="border-b border-stone-100 pb-3 mb-4 flex flex-wrap items-center justify-between gap-2">
                                 <div>
@@ -302,6 +312,7 @@
                                     </h3>
                                     <p class="text-xs text-stone-400 font-medium mt-0.5" id="activeBookProgressText">읽은 진도: 0 / 50장</p>
                                 </div>
+
                                 <div class="flex gap-1">
                                     <button onclick="bulkCheckActiveBook(true)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded text-[11px] font-bold transition-all">
                                         <i class="fa-solid fa-check-double mr-0.5"></i> 전체 선택
@@ -311,6 +322,7 @@
                                     </button>
                                 </div>
                             </div>
+
                             <div class="overflow-y-auto flex-grow pr-1" id="chapterMatrixContainer"></div>
                         </div>
 
@@ -324,9 +336,13 @@
                                 </div>
                             </div>
                         </div>
+
                     </div>
+
                 </div>
+
             </section>
+
         </main>
     </div>
 
@@ -473,7 +489,7 @@
             </div>
 
             <div class="flex gap-2 mt-6">
-                <button onclick="closeAddUserModal()" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-2 rounded-xl text-xs transition-all">취소</button>
+                <button onclick="closeAddUserModal()" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold py-2 rounded-xl text-sm transition-all">취소</button>
                 <button onclick="submitNewUser()" class="flex-1 bg-emerald-800 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-sm transition-all">추가하기</button>
             </div>
         </div>
@@ -584,7 +600,7 @@
         </div>
     </div>
 
-    <!-- MY ACCOUNT MODAL (로그인 완료 후 내 계정 정보 및 로그아웃 팝업) -->
+    <!-- MY ACCOUNT MODAL -->
     <div id="syncAccountModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-stone-100 animate-scale-up text-left">
             <h3 class="font-bold text-lg text-stone-800 mb-2 flex items-center gap-1.5">
@@ -671,13 +687,14 @@
                     </div>
                 </div>
             </div>
+            
             <div class="mt-5 pt-3 border-t border-stone-100 flex justify-end">
                 <button onclick="closeAdminModal()" class="text-stone-400 hover:text-stone-600 text-xs font-bold px-3 py-1">닫기</button>
             </div>
         </div>
     </div>
 
-    <!-- MY PAGE MODAL -->
+    <!-- MY PAGE MODAL (📊 전체 마이페이지 팝업창) -->
     <div id="myPageModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-stone-100 max-h-[90vh] overflow-y-auto animate-scale-up text-left">
             <div class="flex justify-between items-center pb-4 border-b border-stone-100 mb-4">
@@ -784,7 +801,7 @@
             "\"여호와의 율법은 완전하여 영혼을 소성시키며 여호와의 증거는 확실하여 우둔한 자를 지혜롭게 하며\" (시 19:7)",
             "\"이 율법책을 네 입에서 떠나지 말게 하며 주야로 그것을 묵상하여 그 안에 기록된 대로 다 지켜 행하라 그리하면 네 길이 평탄하게 될 것이며 네가 형통하리라\" (수 1:8)",
             "\"주의 말씀은 내 발에 등이요 내 길에 빛이니이다\" (시 119:105)",
-            "\"하나님의 말씀은 살아 있고 활력이 있어 좌우에 날선 어떤 검보다도 예리하여 혼과 영과 및 관절과 골수를 찔러 쪼개기까지 하며 또 마음의 생각과 뜻을 판단하나니\" (히 4:12)",
+            "\"하나님의 말씀은 살아 있고 활력이 있어 좌우에 날선 어떤 검보다도 예리하여 혼과 영과 및 관절과 골수가 찔러 쪼개기까지 하며 또 마음의 생각과 뜻을 판단하나니\" (히 4:12)",
             "\"이 예언의 말씀을 읽는 자와 듣는 자와 그 가운데에 기록한 것을 지키는 자는 복이 있나니 때가 가까움이라\" (계 1:3)",
             "\"모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니\" (딤후 3:16)"
         ];
@@ -829,7 +846,7 @@
 
         // Application State
         let state = {
-            myProfile: null, // { id, name, color, syncId, syncKey, password }
+            myProfile: null, // { id, name, color, syncId, syncKey }
             myRooms: [], // [{ id, name, progress: { [bookId]: [chapters] } }]
             currentRoomId: null, // Currently joined roomId
             
@@ -2888,6 +2905,8 @@
                 state.currentRoomId = null;
                 state.users = {};
                 state.activeUserId = "";
+                // 강제로 빈 상태 로컬 세이브하여 구버전 세션 자동 로드 방지
+                localStorage.setObj('bible_rooms_state_v3', state);
             } else {
                 loadStateFromLocalStorage();
             }
