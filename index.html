@@ -252,18 +252,16 @@
                     </div>
                 </div>
 
-                <!-- Together Board (Dynamic Comparison with others) -->
+                <!-- Together Board -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/80">
                     <h3 class="font-bold text-stone-800 text-sm tracking-wide uppercase mb-3.5 flex items-center justify-between">
                         <span><i class="fa-solid fa-users-rectangle text-emerald-600 mr-1.5"></i>멤버별 읽기 현황판</span>
                         <span class="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full font-medium animate-pulse">실시간 연동중</span>
                     </h3>
-                    <div class="space-y-4" id="compareUsersContainer">
-                        <!-- Dynamic progression bars for all users -->
-                    </div>
+                    <div class="space-y-4" id="compareUsersContainer"></div>
                 </div>
 
-                <!-- Helpful Bible Quotes / Motivation widget -->
+                <!-- Helpful Bible Quotes -->
                 <div class="bg-amber-50/70 border border-amber-200/50 rounded-2xl p-4 text-stone-700 text-xs relative">
                     <i class="fa-solid fa-quote-left absolute top-3 left-3 text-amber-200 text-2xl"></i>
                     <div class="pl-6 relative z-10">
@@ -281,7 +279,6 @@
 
                 <!-- Category & Search Tabs -->
                 <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-stone-200/80 flex flex-wrap items-center justify-between gap-3">
-                    <!-- Tabs -->
                     <div class="flex bg-stone-100 p-1 rounded-xl gap-1">
                         <button onclick="filterBibleCategory('전체')" id="tabBtn_전체" class="category-tab px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all bg-white text-stone-800 shadow-sm">
                             전체 (66권)
@@ -300,24 +297,19 @@
                     </div>
                 </div>
 
-                <!-- Double-Column View (Left: Bible Books List, Right: Interactive Chapter Checker) -->
+                <!-- Double-Column View -->
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-5 min-h-[500px]">
 
-                    <!-- Bible Books Selector (List) -->
                     <div class="md:col-span-5 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-3 flex flex-col max-h-[550px]">
                         <span class="text-xs text-stone-400 font-bold px-2 py-1 flex items-center gap-1 border-b border-stone-100 pb-2">
                             <i class="fa-solid fa-scroll"></i> 성경 목록 선택
                         </span>
-                        <div class="overflow-y-auto flex-grow divide-y divide-stone-100/60 pr-1 mt-2" id="bibleBookList">
-                            <!-- Bible Book Buttons will load dynamically -->
-                        </div>
+                        <div class="overflow-y-auto flex-grow divide-y divide-stone-100/60 pr-1 mt-2" id="bibleBookList"></div>
                     </div>
 
-                    <!-- Interactive Chapter Board -->
                     <div class="md:col-span-7 bg-white rounded-2xl shadow-sm border border-stone-200/80 p-4 md:p-5 flex flex-col justify-between max-h-[550px]">
                         
                         <div class="flex-grow flex flex-col overflow-hidden">
-                            <!-- Active Book Title Header -->
                             <div class="border-b border-stone-100 pb-3 mb-4 flex flex-wrap items-center justify-between gap-2">
                                 <div>
                                     <h3 class="text-xl font-bold text-stone-800 flex items-center gap-2">
@@ -327,7 +319,6 @@
                                     <p class="text-xs text-stone-400 font-medium mt-0.5" id="activeBookProgressText">읽은 진도: 0 / 50장</p>
                                 </div>
 
-                                <!-- Fast-Action Bulk Controls -->
                                 <div class="flex gap-1">
                                     <button onclick="bulkCheckActiveBook(true)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded text-[11px] font-bold transition-all">
                                         <i class="fa-solid fa-check-double mr-0.5"></i> 전체 선택
@@ -338,13 +329,9 @@
                                 </div>
                             </div>
 
-                            <!-- Main Chapter Buttons Matrix Grid -->
-                            <div class="overflow-y-auto flex-grow pr-1" id="chapterMatrixContainer">
-                                <!-- Chapter Grid Buttons will load here dynamically -->
-                            </div>
+                            <div class="overflow-y-auto flex-grow pr-1" id="chapterMatrixContainer"></div>
                         </div>
 
-                        <!-- Custom Range/Bulk check helper footer -->
                         <div class="bg-stone-50 border border-stone-100 rounded-xl p-3.5 mt-4 text-xs">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <span class="text-stone-500 font-medium"><i class="fa-solid fa-wand-magic-sparkles mr-0.5 text-amber-500"></i> 몰아서 선택하기:</span>
@@ -367,7 +354,7 @@
 
     <!-- Modals Area -->
 
-    <!-- FIRST VISIT WELCOME MODAL (최초 실행 시 '새로 가입' 및 '기존 계정 로그인' 선택형 모달) -->
+    <!-- FIRST VISIT WELCOME MODAL -->
     <div id="welcomeModal" class="hidden fixed inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-stone-100 text-center animate-scale-up">
             <div class="bg-emerald-100 text-emerald-950 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
@@ -400,6 +387,15 @@
                     <label class="block text-[11px] font-bold text-stone-400 mb-0.5" for="welcomeUserPw">비밀번호 (숫자 4자리)</label>
                     <input type="password" id="welcomeUserPw" placeholder="숫자 4자리 입력" maxlength="4" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-emerald-600 font-bold tracking-widest text-stone-800 text-center">
                 </div>
+                
+                <!-- 자동 로그인 설정 체크박스 추가 🔑 -->
+                <div class="flex items-center justify-between pt-1">
+                    <label class="flex items-center gap-2 text-xs text-stone-600 cursor-pointer">
+                        <input type="checkbox" id="welcomeRegisterAutoLogin" class="rounded text-emerald-600 focus:ring-emerald-500" checked>
+                        <span>자동 로그인 유지</span>
+                    </label>
+                </div>
+
                 <div>
                     <label class="block text-[11px] font-bold text-stone-400 mb-1">테마 컬러</label>
                     <div class="grid grid-cols-4 gap-2" id="welcomeColorPicker">
@@ -424,6 +420,15 @@
                     <label class="block text-[11px] font-bold text-stone-400 mb-0.5" for="welcomeSyncPw">비밀번호 (숫자 4자리)</label>
                     <input type="password" id="welcomeSyncPw" placeholder="숫자 4자리 입력" maxlength="4" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-indigo-600 font-bold tracking-widest text-stone-800 text-center">
                 </div>
+
+                <!-- 자동 로그인 설정 체크박스 추가 🔑 -->
+                <div class="flex items-center justify-between pt-1">
+                    <label class="flex items-center gap-2 text-xs text-stone-600 cursor-pointer">
+                        <input type="checkbox" id="welcomeLoginAutoLogin" class="rounded text-indigo-600 focus:ring-indigo-500" checked>
+                        <span>자동 로그인 유지</span>
+                    </label>
+                </div>
+
                 <button onclick="submitWelcomeLogin()" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl text-sm transition-all shadow-md">
                     로그인하고 데이터 가져오기
                 </button>
@@ -947,8 +952,9 @@
                         modeBadge.innerText = savedCustomConfig ? "나만의 개인 Firebase 연동 작동 중!" : "실시간 단독 클라우드 구동 중";
                     }
 
-                    // 인증 완료 후 안전하게 방 로드 시작
-                    if (state.currentRoomId) {
+                    // [인증 완료 및 예외 제어 가드 적용 🚨]
+                    // currentRoomId가 비어있지 않고, 실제 방 배열에 존재할 때만 다이렉트 입장 연동!
+                    if (state.currentRoomId && typeof state.currentRoomId === 'string' && state.currentRoomId.trim() !== '') {
                         joinRoomSync(state.currentRoomId);
                     } else {
                         renderLobbyScreen();
@@ -971,9 +977,11 @@
                 modeBadge.innerText = "공용 무료 무선 서버로 동작 중";
             }
             
-            const savedRoomId = localStorage.getItem('bible_together_room_id');
-            if (savedRoomId || state.currentRoomId) {
-                joinRoomSync(savedRoomId || state.currentRoomId);
+            // [경로 안전 가드 장치 🚨] roomId 패스가 공란일 때의 에러를 원천 복구!
+            if (state.currentRoomId && typeof state.currentRoomId === 'string' && state.currentRoomId.trim() !== '') {
+                joinRoomSync(state.currentRoomId);
+            } else {
+                renderLobbyScreen();
             }
         }
 
@@ -995,6 +1003,7 @@
 
         // 깃허브 폴백 엔진 데이터 가져오기 (CORS 우회 및 에러 세이프티 적용)
         async function fetchFallbackData(roomId) {
+            if (!roomId || typeof roomId !== 'string' || roomId.trim() === '') return;
             const encodedRoomId = encodeURIComponent(roomId);
             const data = await safeFetchJson(`https://kvdb.io/${FALLBACK_BUCKET}/room_${encodedRoomId}`);
             if (data && data.users) {
@@ -1005,6 +1014,7 @@
 
         // 깃허브 폴백 엔진 데이터 저장하기
         async function saveFallbackData(roomId) {
+            if (!roomId || typeof roomId !== 'string' || roomId.trim() === '') return;
             const payload = { roomName: (state.myRooms.find(r => r.id === roomId) || {}).name || "새 성경방", users: state.users };
             const encodedRoomId = encodeURIComponent(roomId);
             await safeFetchJson(`https://kvdb.io/${FALLBACK_BUCKET}/room_${encodedRoomId}`, {
@@ -1016,6 +1026,7 @@
 
         // Join a real-time Room safely
         function joinRoomSync(roomId) {
+            if (!roomId || typeof roomId !== 'string' || roomId.trim() === '') return;
             // [방어코드 🚨] 기기에 이전 잔재 데이터만 있고 프로필이 아직 생성되지 않은 경우 예외적 크래시 사전 방지
             if (!state.myProfile) {
                 console.log("프로필 가동 전으로 동기화 로직을 일시 보류합니다.");
@@ -1110,6 +1121,7 @@
 
         // Update room name in our local state if we discovered it from server
         function updateRoomNameInState(roomId, cloudName) {
+            if (!roomId || typeof roomId !== 'string' || roomId.trim() === '') return;
             const localRoom = state.myRooms.find(r => r.id === roomId);
             if (localRoom && localRoom.name !== cloudName) {
                 localRoom.name = cloudName;
@@ -1884,7 +1896,7 @@
             const currentUserObj = state.users[state.activeUserId];
             if (!currentUserObj) return;
 
-            const theme = colorClasses[currentUserObj.color || 'emerald'] || colorClasses['emerald'];
+            const theme = colorClasses[currentUserObj.color] || colorClasses['emerald'];
             const badgeColor = document.getElementById('userBadgeColor');
             if (badgeColor) {
                 badgeColor.className = `w-4 h-4 rounded-full ${theme.primary}`;
@@ -1908,7 +1920,7 @@
                 const strokeDashoffset = circumference - (percentage / 100) * circumference;
                 circle.style.strokeDasharray = `${circumference} ${circumference}`;
                 circle.style.strokeDashoffset = strokeDashoffset;
-                circle.style.stroke = (currentUserObj.color === 'emerald' || !currentUserObj.color) ? '#10b981' :
+                circle.style.stroke = currentUserObj.color === 'emerald' ? '#10b981' :
                                    currentUserObj.color === 'amber' ? '#f59e0b' :
                                    currentUserObj.color === 'rose' ? '#f43f5e' : '#6366f1';
             }
@@ -1929,7 +1941,7 @@
 
                 const stats = getUserTotalCount(user);
                 const percent = Math.round((stats.total / 1189) * 100);
-                const userTheme = colorClasses[user.color || 'emerald'] || colorClasses['emerald'];
+                const userTheme = colorClasses[user.color] || colorClasses['emerald'];
 
                 const userProgressRow = document.createElement('div');
                 userProgressRow.className = "space-y-1.5 p-2 rounded-xl transition-all " + (uid === state.activeUserId ? 'bg-stone-50 border border-stone-200/40 shadow-sm' : '');
@@ -2225,97 +2237,10 @@
             document.getElementById('syncAccountModal').classList.add('hidden');
         }
 
-        async function submitSyncRegister() {
-            const id = document.getElementById('syncIdInput').value.trim();
-            const pw = document.getElementById('syncPasswordInput').value.trim();
-            if (!id || !pw) {
-                alertModal("실명(아이디)과 비밀번호를 모두 입력해 주세요.");
-                return;
-            }
-            if (id.length < 2) {
-                alertModal("실명(아이디)은 최소 2글자 이상이어야 합니다.");
-                return;
-            }
-            if (pw.length !== 4 || isNaN(parseInt(pw))) {
-                alertModal("비밀번호는 숫자 4자리여야 합니다.");
-                return;
-            }
-
-            const syncKey = "sync_" + id.toLowerCase();
-            const encodedKey = encodeURIComponent(syncKey);
-
-            let exists = false;
-            if (isFirebaseEnabled && currentUser) {
-                try {
-                    const docSnap = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('user_syncs').doc(syncKey).get();
-                    exists = docSnap.exists;
-                } catch(e) { exists = false; }
-            } else {
-                const data = await safeFetchJson(`https://kvdb.io/${FALLBACK_BUCKET}/usr_${encodedKey}`);
-                exists = (data !== null);
-            }
-
-            if (exists) {
-                alertModal("이미 존재하는 실명(아이디)입니다. 성함 뒤에 구별할 수 있는 숫자나 단어를 붙여주시거나, [로그인 / 불러오기]를 진행해 주세요.");
-                return;
-            }
-
-            state.myProfile.syncKey = syncKey;
-            state.myProfile.syncId = id;
-            state.myProfile.password = pw;
-            saveStateToLocalStorage(); 
-            
-            closeSyncAccountModal();
-            renderLobbyScreen();
-            alertModal(`동기화 계정이 가입되었습니다! 이제 다른 스마트폰이나 컴퓨터에서도 이 실명(아이디)/비밀번호로 로그인하면 내 방 목록과 진도를 그대로 이어받을 수 있습니다.`);
-        }
-
-        async function submitSyncLogin() {
-            const id = document.getElementById('syncIdInput').value.trim();
-            const pw = document.getElementById('syncPasswordInput').value.trim();
-            if (!id || !pw) {
-                alertModal("실명(아이디)과 비밀번호를 모두 입력해 주세요.");
-                return;
-            }
-
-            const syncKey = "sync_" + id.toLowerCase();
-            const encodedKey = encodeURIComponent(syncKey);
-
-            let cloudData = null;
-            if (isFirebaseEnabled && currentUser) {
-                try {
-                    const docSnap = await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('user_syncs').doc(syncKey).get();
-                    if (docSnap.exists) cloudData = docSnap.data();
-                } catch(e) { cloudData = null; }
-            } else {
-                cloudData = await safeFetchJson(`https://kvdb.io/${FALLBACK_BUCKET}/usr_${encodedKey}`);
-            }
-
-            if (!cloudData || !cloudData.myProfile || cloudData.myProfile.password !== pw) {
-                alertModal("등록되지 않은 계정이거나 비밀번호가 틀렸습니다. 다시 확인해 주세요.");
-                return;
-            }
-
-            if (confirmModal(`계정 데이터를 불러오시겠습니까? 현재 기기에 기록된 모든 데이터가 가입하셨던 계정 정보로 안전하게 덮어씌워집니다.`)) {
-                state.myProfile = cloudData.myProfile;
-                state.myRooms = cloudData.myRooms || [];
-                state.users = {};
-
-                state.myProfile.syncKey = syncKey;
-                state.myProfile.syncId = id;
-                state.myProfile.password = pw;
-
-                saveStateToLocalStorage();
-                closeSyncAccountModal();
-                
-                renderLobbyScreen();
-                alertModal(`반갑습니다, ${state.myProfile.name}님! 내 동기화 계정 데이터를 성공적으로 가져왔습니다.`);
-            }
-        }
-
-        // 로그아웃
+        // 로그아웃 (자동 로그인 해제 🚨)
         function logoutAccount() {
-            if (confirm("로그아웃 하시겠습니까? 로그아웃하면 기기 내 데이터는 유지되지만 동기화가 중단됩니다. 언제든 다시 로그인할 수 있습니다.")) {
+            if (confirm("로그아웃 하시겠습니까? 로그아웃하면 기기 내 데이터는 유지되지만 동기화가 중단됩니다.")) {
+                localStorage.removeItem('autoLogin'); // 자동 로그인 정보 해제!
                 state.myProfile = null;
                 state.myRooms = [];
                 state.currentRoomId = null;
@@ -2583,6 +2508,10 @@
                 return;
             }
 
+            // 자동 로그인 유지 체크박스 값 판독 🔑
+            const isAutoLoginChecked = document.getElementById('welcomeRegisterAutoLogin').checked;
+            localStorage.setItem('autoLogin', isAutoLoginChecked ? 'true' : 'false');
+
             const uniqueId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
             state.myProfile = {
                 id: uniqueId,
@@ -2650,9 +2579,18 @@
             }
 
             if (confirmModal(`성경 읽기 데이터를 성공적으로 발견했습니다! 기존 기기 내 데이터를 완전히 지우고 클라우드 데이터로 복원하시겠습니까?`)) {
+                
+                // 자동 로그인 유지 체크박스 값 판독 🔑
+                const isAutoLoginChecked = document.getElementById('welcomeLoginAutoLogin').checked;
+                localStorage.setItem('autoLogin', isAutoLoginChecked ? 'true' : 'false');
+
                 state.myProfile = cloudData.myProfile;
                 state.myRooms = cloudData.myRooms || [];
                 state.users = {};
+
+                state.myProfile.syncKey = syncKey;
+                state.myProfile.syncId = id;
+                state.myProfile.password = pw;
 
                 saveStateToLocalStorage();
 
@@ -2834,6 +2772,20 @@
         // DOMContentLoaded에 안전한 동적 연동 시작
         window.addEventListener('DOMContentLoaded', async () => {
             loadStateFromLocalStorage();
+
+            // [수동 로그인 체크 가이드 🚨]
+            // 자동 로그인 'autoLogin' 설정값이 true가 아니라면 접속할 때마다 세션을 청소해 웰컴(로그인/가입) 창 유도!
+            const autoLoginActive = localStorage.getItem('autoLogin') === 'true';
+            if (!autoLoginActive) {
+                state.myProfile = null;
+                state.myRooms = [];
+                state.currentRoomId = null;
+                state.users = {};
+                state.activeUserId = "";
+                // LocalStorage에 즉각 동기화 세이브
+                localStorage.setObj('bible_rooms_state_v3', state);
+            }
+
             await initFirebaseAndAuth(); // [RULE 3 준수 ⭐] 로그인이 완료될 때까지 비동기 대기 처리!
             checkAndTriggerProfileWelcome(); // 로그인 완료 후 안전하게 가동
             getNewVerse();
@@ -2890,8 +2842,6 @@
         window.closeSyncAccountModal = closeSyncAccountModal;
         window.logoutAccount = logoutAccount;
         window.submitBackupRegister = submitBackupRegister;
-        window.submitSyncRegister = submitSyncRegister;
-        window.submitSyncLogin = submitSyncLogin;
 
         // 관리자용 기능 전역 맵핑
         window.openAdminModal = openAdminModal;
