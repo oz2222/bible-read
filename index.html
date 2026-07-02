@@ -341,6 +341,7 @@
             <h3 class="font-black text-xl text-stone-800 mb-1">우리 함께 성경 읽기표</h3>
             <p class="text-xs text-stone-500 mb-4 leading-relaxed">기기 간 연동과 실시간 무선 공유를 지원합니다.</p>
             
+            <!-- Tab Buttons -->
             <div class="flex bg-stone-100 p-1 rounded-xl gap-1 mb-4">
                 <button onclick="switchWelcomeTab('register')" id="wTabBtn_register" class="w-full py-2 rounded-lg text-xs font-bold transition-all bg-white text-stone-800 shadow-sm">
                     회원가입
@@ -628,7 +629,7 @@
             <!-- Admin Authentication -->
             <div id="adminAuthSection" class="space-y-3.5 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-stone-500 mb-1" for="adminMasterCode">관리자 마스터 코드</label>
+                    <label class="block text-xs font-bold text-stone-500 mb-1" id="lblAdmin">관리자 마스터 코드</label>
                     <input type="password" id="adminMasterCode" placeholder="숫자 4자리 입력" maxlength="4" class="w-full px-3 py-2 rounded-xl border border-stone-200 text-sm focus:outline-indigo-600 font-bold tracking-widest text-center text-stone-800">
                     <span class="text-[10px] text-stone-400 block mt-1 text-center">※ 기본 마스터 코드는 **1004** 입니다.</span>
                 </div>
@@ -640,16 +641,12 @@
             <!-- Admin Dashboard -->
             <div id="adminDashboardSection" class="hidden space-y-4 text-left">
                 <div class="bg-stone-50 p-3 rounded-xl border border-stone-200/50">
-                    <label class="block text-[11px] font-bold text-stone-500 mb-1" for="adminSearchId">사용자 실명 (아이디) 조회</label>
+                    <label class="block text-[11px] font-bold text-stone-500 mb-1">사용자 실명 (아이디) 조회</label>
                     <div class="flex gap-2">
                         <input type="text" id="adminSearchId" placeholder="예: 홍길동" class="flex-grow px-3 py-2 rounded-xl border border-stone-200 text-xs focus:outline-indigo-600 font-semibold text-stone-800 bg-white">
-                        <button onclick="adminSearchUser()" class="bg-stone-900 hover:bg-stone-800 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all whitespace-nowrap">
-                            조회
-                        </button>
+                        <button onclick="adminSearchUser()" class="bg-stone-900 hover:bg-stone-800 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all whitespace-nowrap">조회</button>
                     </div>
                 </div>
-
-                <!-- Search Results panel -->
                 <div id="adminResultPanel" class="hidden p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl space-y-2.5 text-xs text-stone-700">
                     <div class="flex justify-between border-b border-indigo-100 pb-1">
                         <span class="text-stone-400 font-bold">조회 대상 실명:</span>
@@ -664,24 +661,21 @@
                         <span id="adminResPw" class="font-bold text-indigo-900 text-sm tracking-wider"></span>
                     </div>
                     <div class="pt-1.5 border-t border-indigo-100 space-y-1.5">
-                        <label class="block text-[10px] font-bold text-stone-400" for="adminNewPw">새 비밀번호로 강제 변경</label>
+                        <label class="block text-[10px] font-bold text-stone-400">새 비밀번호로 강제 변경</label>
                         <div class="flex gap-1.5">
                             <input type="password" id="adminNewPw" placeholder="새 숫자 4자리" maxlength="4" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-200 text-xs text-center font-bold tracking-widest text-stone-800">
-                            <button onclick="adminUpdateUserPassword()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[11px] transition-all whitespace-nowrap">
-                                강제 변경
-                            </button>
+                            <button onclick="adminUpdateUserPassword()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1.5 rounded-lg text-[11px] transition-all whitespace-nowrap">강제 변경</button>
                         </div>
                     </div>
                 </div>
             </div>
-            
             <div class="mt-5 pt-3 border-t border-stone-100 flex justify-end">
                 <button onclick="closeAdminModal()" class="text-stone-400 hover:text-stone-600 text-xs font-bold px-3 py-1">닫기</button>
             </div>
         </div>
     </div>
 
-    <!-- MY PAGE MODAL (📊 전체 마이페이지 팝업창) -->
+    <!-- MY PAGE MODAL -->
     <div id="myPageModal" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-stone-100 max-h-[90vh] overflow-y-auto animate-scale-up text-left">
             <div class="flex justify-between items-center pb-4 border-b border-stone-100 mb-4">
@@ -850,7 +844,8 @@
         // Firebase & Fallback Variables
         let db = null;
         let auth = null;
-        let appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // [RULE 1 & 3 예외 사전 안전 셋업 ⭐] Falsy나 "" 빈 주소일 때 생기는 권한 에러를 안전하게 격리 보호!
+        let appId = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'default-app-id';
         let isFirebaseEnabled = false;
         let roomUnsubscribe = null;
         let currentUser = null;
@@ -860,23 +855,61 @@
 
         // Save State strictly to Local Storage AND Cloud backup (If connected!)
         function saveStateToLocalStorage() {
-            localStorage.setObj('bible_rooms_state_v3', state);
+            // [자동 로그인 유효화 고도화 🔑]
+            // 자동 로그인 'autoLogin' 설정값에 따라 SessionStorage와 LocalStorage 영구 분할 연동 처리!
+            sessionStorage.setObj('bible_profile', state.myProfile);
+            sessionStorage.setObj('bible_rooms', state.myRooms);
+            if (state.currentRoomId) {
+                sessionStorage.setItem('bible_current_room', state.currentRoomId);
+            } else {
+                sessionStorage.removeItem('bible_current_room');
+            }
+
+            const autoLoginActive = localStorage.getItem('autoLogin') === 'true';
+            if (autoLoginActive && state.myProfile) {
+                localStorage.setObj('bible_profile_perm', state.myProfile);
+                localStorage.setObj('bible_rooms_perm', state.myRooms);
+                if (state.currentRoomId) {
+                    localStorage.setItem('bible_current_room_perm', state.currentRoomId);
+                } else {
+                    localStorage.removeItem('bible_current_room_perm');
+                }
+            } else {
+                localStorage.removeItem('bible_profile_perm');
+                localStorage.removeItem('bible_rooms_perm');
+                localStorage.removeItem('bible_current_room_perm');
+            }
+
             if (state.myProfile && state.myProfile.syncKey) {
                 syncAccountToCloud();
             }
         }
 
-        // Load State from Local Storage (안전성 최우선 마이그레이션 가드 설계)
+        // Load State from Storage (임시 Session 및 영구 Storage 이원 로딩 연동 설계 🔑)
         function loadStateFromLocalStorage() {
-            const savedState = localStorage.getObj('bible_rooms_state_v3');
-            if (savedState) {
-                state = savedState;
-                // 구기록 안전 마이그레이션 및 기본값 채우기 (크래시 절대 방지)
-                if (!state.myRooms || !Array.isArray(state.myRooms)) state.myRooms = [];
+            // 1차적으로 브라우저 새로고침용 임시 sessionStorage 판독
+            let profile = sessionStorage.getObj('bible_profile');
+            let rooms = sessionStorage.getObj('bible_rooms');
+            let currentRoom = sessionStorage.getItem('bible_current_room');
+
+            const autoLoginActive = localStorage.getItem('autoLogin') === 'true';
+            if (!profile && autoLoginActive) {
+                // 자동 로그인이 체크되어 있다면 영구 저장소에서 로드
+                profile = localStorage.getObj('bible_profile_perm');
+                rooms = localStorage.getObj('bible_rooms_perm');
+                currentRoom = localStorage.getItem('bible_current_room_perm');
+            }
+
+            if (profile) {
+                state.myProfile = profile;
+                state.myRooms = rooms || [];
+                state.currentRoomId = currentRoom;
+                
+                // 기본 구조 마이그레이션 예외 가드 
                 if (!state.users || typeof state.users !== 'object') state.users = {};
                 if (!state.activeUserId) state.activeUserId = "";
                 if (!state.activeBookId) state.activeBookId = 1;
-                state.activeBookId = Number(state.activeBookId || 1); // 숫자 타입 고정
+                state.activeBookId = Number(state.activeBookId || 1);
                 if (isNaN(state.activeBookId)) state.activeBookId = 1;
                 if (!state.categoryFilter) state.categoryFilter = "전체";
                 if (!state.searchQuery) state.searchQuery = "";
@@ -895,7 +928,6 @@
                     selectedModalColor: "emerald",
                     dailyGoal: 3
                 };
-                saveStateToLocalStorage();
             }
         }
 
@@ -943,13 +975,6 @@
                         modeBadge.innerText = savedCustomConfig ? "나만의 개인 Firebase 연동 작동 중!" : "실시간 단독 클라우드 구동 중";
                     }
 
-                    // 인증 완료 후 안전하게 방 로드 시작
-                    if (state.currentRoomId && typeof state.currentRoomId === 'string' && state.currentRoomId.trim() !== '') {
-                        joinRoomSync(state.currentRoomId);
-                    } else {
-                        renderLobbyScreen();
-                    }
-
                 } catch (e) {
                     console.error("Firebase 초기화 에러 (안전 폴백 연결 가동):", e);
                     setupFallbackSync();
@@ -965,11 +990,6 @@
             if (modeBadge) {
                 modeBadge.className = "inline-block text-xs font-black px-3 py-1.5 rounded-xl bg-amber-100 text-amber-800";
                 modeBadge.innerText = "공용 무료 무선 서버로 동작 중";
-            }
-            
-            const savedRoomId = localStorage.getItem('bible_together_room_id');
-            if (savedRoomId || state.currentRoomId) {
-                joinRoomSync(savedRoomId || state.currentRoomId);
             }
         }
 
@@ -1109,7 +1129,6 @@
 
         // Update room name in our local state if we discovered it from server
         function updateRoomNameInState(roomId, cloudName) {
-            if (!roomId || typeof roomId !== 'string' || roomId.trim() === '') return;
             const localRoom = state.myRooms.find(r => r.id === roomId);
             if (localRoom && localRoom.name !== cloudName) {
                 localRoom.name = cloudName;
@@ -2225,7 +2244,7 @@
             document.getElementById('syncAccountModal').classList.add('hidden');
         }
 
-        // [동기화 연쇄 오류 완벽 격리 해결 ⭐] 정의가 누락되어ReferenceError가 나던 실명 수동 동기화(회원가입) 함수 완벽 정의!
+        // [동기화 연쇄 오류 완벽 격리 해결 ⭐] 정의가 누락되어 ReferenceError가 나던 실명 수동 동기화(회원가입) 함수 완벽 정의!
         async function submitSyncRegister() {
             const id = document.getElementById('syncIdInput').value.trim();
             const pw = document.getElementById('syncPasswordInput').value.trim();
@@ -2271,7 +2290,7 @@
             alertModal(`동기화 계정이 가입되었습니다! 이제 다른 스마트폰이나 컴퓨터에서도 이 실명(아이디)/비밀번호로 로그인하면 내 방 목록과 진도를 그대로 이어받을 수 있습니다.`);
         }
 
-        // [동기화 연쇄 오류 완벽 격리 해결 ⭐] 정의가 누락되어ReferenceError가 나던 실명 수동 동기화(로그인) 함수 완벽 정의!
+        // [동기화 연쇄 오류 완벽 격리 해결 ⭐] 정의가 누락되어 ReferenceError가 나던 실명 수동 동기화(로그인) 함수 완벽 정의!
         async function submitSyncLogin() {
             const id = document.getElementById('syncIdInput').value.trim();
             const pw = document.getElementById('syncPasswordInput').value.trim();
@@ -2862,8 +2881,6 @@
 
         // DOMContentLoaded에 안전한 동적 연동 시작
         window.addEventListener('DOMContentLoaded', async () => {
-            loadStateFromLocalStorage();
-
             // [수동 로그인 체크 가이드 🚨]
             // 자동 로그인 'autoLogin' 설정값이 true가 아니라면 접속할 때마다 세션을 청소해 웰컴(로그인/가입) 창 유도!
             const autoLoginActive = localStorage.getItem('autoLogin') === 'true';
@@ -2873,8 +2890,8 @@
                 state.currentRoomId = null;
                 state.users = {};
                 state.activeUserId = "";
-                // LocalStorage에 즉각 동기화 세이브
-                localStorage.setObj('bible_rooms_state_v3', state);
+            } else {
+                loadStateFromLocalStorage();
             }
 
             await initFirebaseAndAuth(); // [RULE 3 준수 ⭐] 로그인이 완료될 때까지 비동기 대기 처리!
@@ -2928,7 +2945,7 @@
         window.closeCustomDbModal = closeCustomDbModal;
         window.saveCustomDbSettings = saveCustomDbSettings;
 
-        // 동기화 관련 기능 전역 맵핑
+        // 동기화 관련 기능 전역 맵핑 (ReferenceError 방어 완료 ⭐)
         window.openSyncAccountModal = openSyncAccountModal;
         window.closeSyncAccountModal = closeSyncAccountModal;
         window.logoutAccount = logoutAccount;
